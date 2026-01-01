@@ -1,5 +1,5 @@
 <template>
-  <div class="modal fade" :class="{ show: show, 'd-block': show }" tabindex="-1" v-if="show">
+  <div class="modal fade" :class="{ show: show, 'd-block': show }" tabindex="-1" v-show="show">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
@@ -117,7 +117,7 @@
       </div>
     </div>
   </div>
-  <div class="modal-backdrop fade show" v-if="show"></div>
+  <div class="modal-backdrop fade show" v-show="show"></div>
 </template>
 
 <script>
@@ -163,31 +163,23 @@ export default {
       return '';
     });
 
+    // Watch show prop - populate form when modal opens
+    let lastShowState = false;
     watch(
-      () => props.ip,
-      (newIP) => {
-        if (newIP) {
-          formData.value = {
-            status: newIP.status || 'unknown',
-            hostname: newIP.hostname || '',
-            domain: newIP.domain || '',
-            subdomain: newIP.subdomain || '',
-            mac_address: newIP.mac_address || '',
-            notes: newIP.notes || '',
-          };
-        } else {
-          formData.value = {
-            status: 'unknown',
-            hostname: '',
-            domain: '',
-            subdomain: '',
-            mac_address: '',
-            notes: '',
-          };
+      () => props.show,
+      (isShowing) => {
+        // Only act when modal transitions from closed to open
+        if (isShowing && !lastShowState && props.ip) {
+          formData.value.status = props.ip.status || 'unknown';
+          formData.value.hostname = props.ip.hostname || '';
+          formData.value.domain = props.ip.domain || '';
+          formData.value.subdomain = props.ip.subdomain || '';
+          formData.value.mac_address = props.ip.mac_address || '';
+          formData.value.notes = props.ip.notes || '';
+          error.value = null;
         }
-        error.value = null;
-      },
-      { immediate: true }
+        lastShowState = isShowing;
+      }
     );
 
     async function handleSubmit() {
@@ -205,6 +197,10 @@ export default {
         await api.put(`/ips/${props.ip.id}`, updateData);
         emit('saved');
         emit('close');
+        // Force a small delay to ensure backend has processed the update
+        setTimeout(() => {
+          // Statistics will be updated via socket event
+        }, 100);
       } catch (err) {
         error.value = err.response?.data?.error || err.message || 'An error occurred';
       } finally {
@@ -245,13 +241,19 @@ export default {
 
 <style scoped>
 .modal {
-  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1055;
+  pointer-events: auto;
+}
+
+.modal-backdrop {
   z-index: 1050;
+  pointer-events: none;
 }
 
 .modal-content {
   background-color: var(--card-bg) !important;
   border: 1px solid var(--card-border) !important;
+  pointer-events: auto;
 }
 
 .modal-header {

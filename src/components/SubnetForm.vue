@@ -1,5 +1,5 @@
 <template>
-  <div class="modal fade" :class="{ show: show, 'd-block': show }" tabindex="-1" v-if="show">
+  <div class="modal fade" :class="{ show: show, 'd-block': show }" tabindex="-1" v-show="show">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -87,7 +87,7 @@
       </div>
     </div>
   </div>
-  <div class="modal-backdrop fade show" v-if="show"></div>
+  <div class="modal-backdrop fade show" v-show="show"></div>
 </template>
 
 <script>
@@ -123,33 +123,49 @@ export default {
       monitoring_enabled: true,
     });
 
+    // Only watch show - reset form when modal opens
+    let lastShowState = false;
     watch(
-      () => props.subnet,
-      (newSubnet) => {
-        if (newSubnet) {
-          formData.value = {
-            name: newSubnet.name || '',
-            subnet: newSubnet.subnet || '',
-            description: newSubnet.description || '',
-            tags: newSubnet.tags ? (typeof newSubnet.tags === 'string' ? JSON.parse(newSubnet.tags) : newSubnet.tags) : [],
-            scan_interval: newSubnet.scan_interval || 300,
-            monitoring_enabled: newSubnet.monitoring_enabled !== undefined ? newSubnet.monitoring_enabled : true,
-          };
-          tagsInput.value = formData.value.tags.join(', ');
-        } else {
-          formData.value = {
-            name: '',
-            subnet: '',
-            description: '',
-            tags: [],
-            scan_interval: 300,
-            monitoring_enabled: true,
-          };
-          tagsInput.value = '';
+      () => props.show,
+      (isShowing) => {
+        // Only act when modal transitions from closed to open
+        if (isShowing && !lastShowState) {
+          if (props.subnet) {
+            // Edit mode - populate with subnet data
+            const newSubnet = props.subnet;
+            let tagsArray = [];
+            if (newSubnet.tags) {
+              if (typeof newSubnet.tags === 'string') {
+                try {
+                  tagsArray = JSON.parse(newSubnet.tags);
+                } catch (e) {
+                  tagsArray = newSubnet.tags.split(',').map(t => t.trim()).filter(t => t);
+                }
+              } else if (Array.isArray(newSubnet.tags)) {
+                tagsArray = newSubnet.tags;
+              }
+            }
+            formData.value.name = newSubnet.name || '';
+            formData.value.subnet = newSubnet.subnet || '';
+            formData.value.description = newSubnet.description || '';
+            formData.value.tags = tagsArray;
+            formData.value.scan_interval = newSubnet.scan_interval || 300;
+            formData.value.monitoring_enabled = newSubnet.monitoring_enabled !== undefined ? Boolean(newSubnet.monitoring_enabled) : true;
+            tagsInput.value = tagsArray.join(', ');
+          } else {
+            // Add mode - reset to empty
+            formData.value.name = '';
+            formData.value.subnet = '';
+            formData.value.description = '';
+            formData.value.tags = [];
+            formData.value.scan_interval = 300;
+            formData.value.monitoring_enabled = true;
+            tagsInput.value = '';
+          }
+          error.value = null;
         }
-        error.value = null;
-      },
-      { immediate: true }
+        lastShowState = isShowing;
+      }
     );
 
     async function handleSubmit() {
@@ -191,13 +207,19 @@ export default {
 
 <style scoped>
 .modal {
-  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1055;
+  pointer-events: auto;
+}
+
+.modal-backdrop {
   z-index: 1050;
+  pointer-events: none;
 }
 
 .modal-content {
   background-color: var(--card-bg) !important;
   border: 1px solid var(--card-border) !important;
+  pointer-events: auto;
 }
 
 .modal-header {

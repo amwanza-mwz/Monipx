@@ -285,6 +285,17 @@ export default {
         console.error('Failed to load IPs:', error);
       }
     }
+    
+    async function refreshStatistics() {
+      try {
+        const response = await api.get(`/subnets/${route.params.id}/statistics`);
+        if (response.data && response.data.statistics) {
+          stats.value = response.data.statistics;
+        }
+      } catch (error) {
+        console.error('Failed to refresh statistics:', error);
+      }
+    }
 
     async function scanSubnet() {
       scanning.value = true;
@@ -350,6 +361,20 @@ export default {
       loadSubnet().then(() => {
         loadIPs();
         startAutoScan();
+      });
+      
+      // Listen for IP updates and statistics updates
+      socket.on('ip:update', () => {
+        // Reload IPs when an IP is updated
+        loadIPs();
+        // Refresh statistics
+        refreshStatistics();
+      });
+      
+      socket.on('subnet:statistics:update', (data) => {
+        if (data.subnet_id === parseInt(route.params.id)) {
+          stats.value = data.statistics;
+        }
       });
     });
     

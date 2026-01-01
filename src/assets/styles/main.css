@@ -382,3 +382,12 @@ body {
   color: var(--bg-primary) !important;
 }
 
+/* Dashboard subtitle in dark mode */
+.dashboard-subtitle {
+  color: var(--text-secondary);
+}
+
+[data-theme='dark'] .dashboard-subtitle {
+  color: var(--text-primary) !important;
+}
+

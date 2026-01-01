@@ -41,6 +41,7 @@
     </div>
 
     <SubnetForm
+      :key="`subnet-form-${showAddForm}-${showEditForm}-${selectedSubnet?.id || 'new'}`"
       :show="showAddForm || showEditForm"
       :subnet="selectedSubnet"
       @close="closeForm"
@@ -170,7 +171,10 @@ export default {
     function closeForm() {
       showAddForm.value = false;
       showEditForm.value = false;
-      selectedSubnet.value = null;
+      // Don't clear selectedSubnet immediately to allow form to read it
+      setTimeout(() => {
+        selectedSubnet.value = null;
+      }, 100);
     }
 
     onMounted(() => {

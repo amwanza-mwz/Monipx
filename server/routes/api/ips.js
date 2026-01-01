@@ -32,6 +32,16 @@ router.put('/:id', async (req, res) => {
     const io = getIO(req);
     if (io) {
       io.to(`subnet:${ip.subnet_id}`).emit('ip:update', ip);
+      
+      // Emit subnet statistics update to refresh connected/disconnected counts
+      const Subnet = require('../../models/Subnet');
+      const stats = await Subnet.getStatistics(ip.subnet_id);
+      if (stats) {
+        io.to(`subnet:${ip.subnet_id}`).emit('subnet:statistics:update', {
+          subnet_id: ip.subnet_id,
+          statistics: stats.statistics
+        });
+      }
     }
 
     res.json(ip);
