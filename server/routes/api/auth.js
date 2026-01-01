@@ -93,5 +93,58 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Get current user (first admin user for now)
+router.get('/me', async (req, res) => {
+  try {
+    const users = await User.getAll();
+    const adminUser = users.find(u => u.is_admin === 1) || users[0];
+    
+    if (!adminUser) {
+      return res.status(404).json({ error: 'No user found' });
+    }
+
+    res.json({
+      id: adminUser.id,
+      username: adminUser.username,
+      email: adminUser.email,
+      is_admin: adminUser.is_admin === 1,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update user
+router.put('/me', async (req, res) => {
+  try {
+    const { username, password, email } = req.body;
+
+    const users = await User.getAll();
+    const adminUser = users.find(u => u.is_admin === 1) || users[0];
+    
+    if (!adminUser) {
+      return res.status(404).json({ error: 'No user found' });
+    }
+
+    const updatedUser = await User.update(adminUser.id, {
+      username,
+      password,
+      email,
+    });
+
+    res.json({
+      message: 'User updated successfully',
+      user: {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        is_admin: updatedUser.is_admin === 1,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
 

@@ -12,6 +12,30 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get theme setting (must be before /:key route)
+router.get('/theme', async (req, res) => {
+  try {
+    const value = await Settings.get('theme');
+    res.json({ key: 'theme', value: value || 'light' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update theme (must be before /:key route)
+router.put('/theme', async (req, res) => {
+  try {
+    const { theme } = req.body;
+    if (!theme || !['light', 'dark'].includes(theme)) {
+      return res.status(400).json({ error: 'Theme must be "light" or "dark"' });
+    }
+    await Settings.set('theme', theme);
+    res.json({ key: 'theme', value: theme });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get setting by key
 router.get('/:key', async (req, res) => {
   try {
@@ -31,20 +55,6 @@ router.put('/:key', async (req, res) => {
     }
     await Settings.set(req.params.key, value);
     res.json({ key: req.params.key, value });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Update theme
-router.put('/theme', async (req, res) => {
-  try {
-    const { theme } = req.body;
-    if (!theme || !['light', 'dark'].includes(theme)) {
-      return res.status(400).json({ error: 'Theme must be "light" or "dark"' });
-    }
-    await Settings.set('theme', theme);
-    res.json({ key: 'theme', value: theme });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

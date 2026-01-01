@@ -47,6 +47,38 @@ class User {
   static async getAll() {
     return await db.prepare('SELECT id, username, email, is_admin, created_at FROM users ORDER BY created_at DESC').all();
   }
+
+  static async update(id, data) {
+    const { username, password, email } = data;
+    const updates = [];
+    const values = [];
+
+    if (username !== undefined) {
+      updates.push('username = ?');
+      values.push(username);
+    }
+    if (email !== undefined) {
+      updates.push('email = ?');
+      values.push(email || null);
+    }
+    if (password !== undefined && password.length > 0) {
+      const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
+      updates.push('password_hash = ?');
+      values.push(passwordHash);
+    }
+
+    if (updates.length === 0) {
+      return await this.getById(id);
+    }
+
+    updates.push('updated_at = CURRENT_TIMESTAMP');
+    values.push(id);
+
+    const sql = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
+    await db.prepare(sql).run(...values);
+
+    return await this.getById(id);
+  }
 }
 
 module.exports = User;

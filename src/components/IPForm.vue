@@ -246,6 +246,30 @@ export default {
 <style scoped>
 .modal {
   background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+}
+
+.modal-content {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+}
+
+.modal-header {
+  background-color: var(--bg-secondary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.modal-body {
+  background-color: var(--card-bg) !important;
+}
+
+.modal-footer {
+  background-color: var(--card-bg) !important;
+  border-top: 1px solid var(--border-color) !important;
+}
+
+[data-theme='dark'] .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.75) !important;
 }
 </style>
 

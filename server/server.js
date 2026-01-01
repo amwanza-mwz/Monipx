@@ -87,6 +87,13 @@ io.on('connection', (socket) => {
 // Make io available to routes
 app.set('io', io);
 
+// Start auto-scan scheduler
+const SubnetScheduler = require('./services/subnet/scheduler');
+const scheduler = new SubnetScheduler(io);
+scheduler.start().catch((error) => {
+  console.error('❌ Failed to start subnet scheduler:', error);
+});
+
 // Start server
 server.listen(PORT, () => {
   console.log(`🚀 Monipx server running on port ${PORT}`);

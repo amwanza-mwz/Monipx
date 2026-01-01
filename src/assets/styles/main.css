@@ -77,9 +77,10 @@ body {
 /* Sidebar layout */
 .main-content {
   margin-left: 250px;
+  margin-top: 60px;
   transition: margin-left 0.3s ease;
-  min-height: 100vh;
-  padding: 1rem;
+  min-height: calc(100vh - 60px);
+  padding: 1.5rem;
 }
 
 .main-content.sidebar-collapsed {
@@ -165,5 +166,219 @@ body {
 
 [data-theme='dark'] .table-success {
   background-color: rgba(63, 185, 80, 0.15) !important;
+}
+
+/* Modern card enhancements */
+.card {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.card-header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1.25rem 1.5rem;
+  font-weight: 600;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Modern button styles */
+.btn {
+  border-radius: 10px;
+  font-weight: 500;
+  padding: 0.625rem 1.25rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+  box-shadow: 0 4px 16px rgba(255, 38, 103, 0.4);
+}
+
+/* Modern input styles */
+.form-control,
+.form-select {
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  padding: 0.625rem 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-radius: 10px;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 38, 103, 0.2);
+}
+
+/* Smooth transitions */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Modern scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Ensure Bootstrap Icons are visible */
+.bi,
+[class^="bi-"],
+[class*=" bi-"] {
+  display: inline-block;
+  font-family: "bootstrap-icons" !important;
+  font-style: normal;
+  font-weight: normal !important;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  vertical-align: -.125em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  speak: none;
+}
+
+/* Scanning animation */
+@keyframes scanning {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner-border-sm.scanning {
+  animation: scanning 1s linear infinite;
+}
+
+/* Button with icon spacing */
+.btn i {
+  margin-right: 0.25rem;
+}
+
+.btn i:last-child {
+  margin-right: 0;
+  margin-left: 0.25rem;
+}
+
+/* Modal dark mode support */
+.modal-content {
+  background-color: var(--card-bg) !important;
+  border-color: var(--card-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.modal-header {
+  background-color: var(--bg-secondary) !important;
+  border-bottom-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.modal-header .modal-title {
+  color: var(--text-primary) !important;
+}
+
+.modal-header .btn-close {
+  filter: var(--text-primary) brightness(0) invert(1);
+}
+
+[data-theme='dark'] .modal-header .btn-close {
+  filter: brightness(0) invert(1);
+}
+
+.modal-body {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+.modal-footer {
+  background-color: var(--card-bg) !important;
+  border-top-color: var(--border-color) !important;
+}
+
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme='dark'] .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Form labels in modals */
+.modal-body .form-label {
+  color: var(--text-primary) !important;
+}
+
+.modal-body .form-text {
+  color: var(--text-secondary) !important;
+}
+
+/* Alert in modals */
+.modal-body .alert {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Ensure all containers respect dark mode */
+.container-fluid,
+.container {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Subnet detail page dark mode */
+.subnet-detail-page {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Code blocks in dark mode */
+[data-theme='dark'] code {
+  background-color: var(--bg-secondary) !important;
+  color: var(--primary-light) !important;
+}
+
+/* Progress bars in dark mode */
+[data-theme='dark'] .progress {
+  background-color: var(--bg-secondary) !important;
+}
+
+/* Badge improvements */
+.badge {
+  color: white !important;
+}
+
+[data-theme='dark'] .badge.bg-secondary {
+  background-color: var(--text-secondary) !important;
+  color: var(--bg-primary) !important;
 }
 

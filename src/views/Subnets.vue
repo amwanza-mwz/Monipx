@@ -30,6 +30,7 @@
           <SubnetCard
             :subnet="subnet"
             :stats="getSubnetStats(subnet.id)"
+            :scanning="scanningSubnets.has(subnet.id)"
             @view="viewSubnet"
             @edit="editSubnet"
             @scan="scanSubnet"
@@ -70,6 +71,7 @@ export default {
     const selectedSubnet = ref(null);
     const subnetStats = ref({});
     const scanningAll = ref(false);
+    const scanningSubnets = ref(new Set());
 
     async function loadSubnets() {
       try {
@@ -121,15 +123,18 @@ export default {
     }
 
     async function scanSubnet(subnetId) {
+      scanningSubnets.value.add(subnetId);
       try {
         await api.post(`/subnets/${subnetId}/scan`);
         // Reload after scan
         setTimeout(() => {
           loadSubnets();
+          scanningSubnets.value.delete(subnetId);
         }, 2000);
       } catch (error) {
         console.error('Failed to scan subnet:', error);
         alert(error.response?.data?.error || 'Failed to scan subnet');
+        scanningSubnets.value.delete(subnetId);
       }
     }
 
@@ -185,6 +190,7 @@ export default {
       scanSubnet,
       scanAllSubnets,
       scanningAll,
+      scanningSubnets,
       deleteSubnet,
       closeForm,
     };
