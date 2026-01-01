@@ -116,25 +116,20 @@ export default {
 </script>
 
 <style scoped>
+/* Sidebar is always dark regardless of theme */
 .sidebar {
   position: fixed;
   left: 0;
   top: 0;
   height: 100vh;
   width: 250px;
-  background: var(--sidebar-bg);
-  border-right: 1px solid var(--border-color);
-  transition: width 0.3s ease, background-color 0.3s ease;
+  background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  transition: width 0.3s ease;
   z-index: 1000;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-}
-
-[data-theme='dark'] .sidebar {
-  background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -147,14 +142,9 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--border-color);
-  min-height: 80px;
-  background: var(--bg-secondary);
-}
-
-[data-theme='dark'] .sidebar-header {
-  background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 80px;
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
 }
 
 .sidebar-brand {
@@ -194,7 +184,7 @@ export default {
 .sidebar-toggle {
   background: none;
   border: none;
-  color: var(--text-primary);
+  color: #c9d1d9;
   font-size: 1.2rem;
   cursor: pointer;
   padding: 0.5rem;
@@ -203,15 +193,6 @@ export default {
 }
 
 .sidebar-toggle:hover {
-  background-color: var(--bg-secondary);
-  color: var(--primary);
-}
-
-[data-theme='dark'] .sidebar-toggle {
-  color: #c9d1d9;
-}
-
-[data-theme='dark'] .sidebar-toggle:hover {
   background-color: rgba(255, 255, 255, 0.1);
   color: #ff2667;
 }
@@ -226,17 +207,13 @@ export default {
   display: flex;
   align-items: center;
   padding: 0.875rem 1.5rem;
-  color: var(--text-secondary);
+  color: #8b949e;
   text-decoration: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   gap: 1rem;
   margin: 0.25rem 0.75rem;
   border-radius: 12px;
   position: relative;
-}
-
-[data-theme='dark'] .nav-item {
-  color: #8b949e;
 }
 
 .nav-icon {
@@ -262,12 +239,8 @@ export default {
 
 .nav-item:hover {
   background-color: rgba(255, 38, 103, 0.15);
-  color: var(--primary);
-  transform: translateX(4px);
-}
-
-[data-theme='dark'] .nav-item:hover {
   color: #ff2667;
+  transform: translateX(4px);
 }
 
 .nav-item:hover .nav-icon {
@@ -307,11 +280,6 @@ export default {
 
 .sidebar-footer {
   padding: 1rem;
-  border-top: 1px solid var(--border-color);
-  background: var(--bg-secondary);
-}
-
-[data-theme='dark'] .sidebar-footer {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   background: #0d1117;
 }
@@ -325,36 +293,22 @@ export default {
   align-items: center;
   width: 100%;
   padding: 0.875rem 1rem;
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-[data-theme='dark'] .user-menu-button {
   background: #161b22;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
   color: #c9d1d9;
-}
-
-.user-menu-button {
+  cursor: pointer;
+  transition: all 0.3s ease;
   gap: 1rem;
   text-align: left;
 }
 
 .user-menu-button:hover {
   background: rgba(255, 38, 103, 0.15);
-  border-color: var(--primary);
+  border-color: #ff2667;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(255, 38, 103, 0.2);
-  color: var(--primary);
-}
-
-[data-theme='dark'] .user-menu-button:hover {
   color: #ff2667;
-  border-color: #ff2667;
 }
 
 .dropdown-arrow {
@@ -372,39 +326,25 @@ export default {
   left: 0;
   right: 0;
   margin-bottom: 0.5rem;
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-  z-index: 1000;
-}
-
-[data-theme='dark'] .user-dropdown-menu {
   background: #161b22;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  z-index: 1000;
 }
 
 .dropdown-item {
   display: flex;
   align-items: center;
   padding: 0.75rem 1rem;
-  color: var(--text-primary);
+  color: #c9d1d9;
   text-decoration: none;
   transition: all 0.2s ease;
 }
 
-[data-theme='dark'] .dropdown-item {
-  color: #c9d1d9;
-}
-
 .dropdown-item:hover {
   background: rgba(255, 38, 103, 0.15);
-  color: var(--primary);
-}
-
-[data-theme='dark'] .dropdown-item:hover {
   color: #ff2667;
 }
 
