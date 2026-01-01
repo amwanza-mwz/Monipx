@@ -7,7 +7,8 @@
   --border-color: #dee2e6;
   --card-bg: #ffffff;
   --card-border: #dee2e6;
-  --sidebar-bg: #ffffff;
+  --sidebar-bg: #f8f9fa;
+  --sidebar-border: #dee2e6;
   --primary: #ff2667;
   --primary-dark: #e01e57;
   --primary-light: #ff4d85;
@@ -15,6 +16,9 @@
   --danger: #dc3545;
   --warning: #ffc107;
   --info: #17a2b8;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
 }
 
 /* Dark Mode */
@@ -27,6 +31,7 @@
   --card-bg: #161b22;
   --card-border: #30363d;
   --sidebar-bg: #161b22;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
   --primary: #ff2667;
   --primary-dark: #e01e57;
   --primary-light: #ff4d85;
@@ -34,6 +39,9 @@
   --danger: #f85149;
   --warning: #d29922;
   --info: #58a6ff;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
 }
 
 body {
