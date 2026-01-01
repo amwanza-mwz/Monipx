@@ -123,13 +123,11 @@ export default {
       monitoring_enabled: true,
     });
 
-    // Only watch show - reset form when modal opens
-    let lastShowState = false;
+    // Watch for when modal opens and populate form data
     watch(
       () => props.show,
       (isShowing) => {
-        // Only act when modal transitions from closed to open
-        if (isShowing && !lastShowState) {
+        if (isShowing) {
           if (props.subnet) {
             // Edit mode - populate with subnet data
             const newSubnet = props.subnet;
@@ -164,8 +162,8 @@ export default {
           }
           error.value = null;
         }
-        lastShowState = isShowing;
-      }
+      },
+      { immediate: true }
     );
 
     async function handleSubmit() {

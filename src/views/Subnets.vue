@@ -41,7 +41,6 @@
     </div>
 
     <SubnetForm
-      :key="`subnet-form-${showAddForm}-${showEditForm}-${selectedSubnet?.id || 'new'}`"
       :show="showAddForm || showEditForm"
       :subnet="selectedSubnet"
       @close="closeForm"
