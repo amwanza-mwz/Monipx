@@ -20,6 +20,14 @@ This project is a testament to solving real problems with open-source solutions,
 
 ---
 
+## 📸 Screenshot
+
+![Monipx Dashboard](HomePage.png)
+
+*Monipx Dashboard showing real-time subnet monitoring, IP inventory, and network health statistics*
+
+---
+
 ## ✨ Features
 
 ### 🎯 Multi-Subnet IP Address Management
