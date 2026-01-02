@@ -294,6 +294,7 @@ export default {
     const showEditMonitor = ref(false);
     const timeRange = ref(24);
     const isFullscreen = ref(false);
+    const chartKey = ref(0); // Force chart re-render on theme change
 
     const timeRanges = [
       { label: '1H', value: 1 },
@@ -476,6 +477,11 @@ export default {
     });
 
     const chartOptions = computed(() => {
+      // Get current theme colors
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const textColor = isDark ? '#8b949e' : '#6c757d';
+      const gridColor = isDark ? '#30363d' : '#dee2e6';
+
       // Calculate smart Y-axis range based on data
       const values = history.value.map(h => h.response_time || 0).filter(v => v > 0);
       const maxValue = values.length > 0 ? Math.max(...values) : 100;
@@ -558,7 +564,7 @@ export default {
             },
             ticks: {
               maxTicksLimit: 8,
-              color: 'var(--text-muted)',
+              color: textColor,
             },
           },
           y: {
@@ -566,11 +572,11 @@ export default {
             min: suggestedMin,
             max: suggestedMax,
             grid: {
-              color: 'var(--border-color)',
+              color: gridColor,
               drawBorder: false,
             },
             ticks: {
-              color: 'var(--text-muted)',
+              color: textColor,
               callback: (value) => {
                 return value < 1000 ? `${value}ms` : `${(value / 1000).toFixed(1)}s`;
               },
@@ -722,6 +728,11 @@ export default {
       loadHistory();
     });
 
+    // Watch for theme changes and force chart update
+    watch(() => document.documentElement.getAttribute('data-theme'), () => {
+      chartKey.value++;
+    });
+
     onMounted(() => {
       loadMonitor();
       loadHistory();
@@ -785,14 +796,15 @@ export default {
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
 }
 
+[data-theme="dark"],
 [data-bs-theme="dark"] {
-  --bg-primary: #1a1d23;
-  --bg-secondary: #22262e;
-  --bg-card: #2a2f3a;
-  --text-primary: #e9ecef;
-  --text-secondary: #adb5bd;
-  --text-muted: #6c757d;
-  --border-color: #3a3f4a;
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-card: #161b22;
+  --text-primary: #c9d1d9;
+  --text-secondary: #8b949e;
+  --text-muted: #8b949e;
+  --border-color: #30363d;
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);

@@ -4,6 +4,7 @@
   --bg-secondary: #f8f9fa;
   --text-primary: #212529;
   --text-secondary: #6c757d;
+  --text-muted: #6c757d;
   --border-color: #dee2e6;
   --card-bg: #ffffff;
   --card-border: #dee2e6;
@@ -27,6 +28,7 @@
   --bg-secondary: #161b22;
   --text-primary: #c9d1d9;
   --text-secondary: #8b949e;
+  --text-muted: #8b949e;
   --border-color: #30363d;
   --card-bg: #161b22;
   --card-border: #30363d;
@@ -480,5 +482,28 @@ body {
 /* Fix form text helper in dark mode */
 [data-theme='dark'] .form-text {
   color: var(--text-secondary) !important;
+}
+
+/* Fix settings page text visibility in dark mode */
+[data-theme='dark'] .setting-label,
+[data-theme='dark'] .section-title {
+  color: var(--text-primary) !important;
+}
+
+[data-theme='dark'] .form-select option {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Ensure all small text is visible in dark mode */
+[data-theme='dark'] small,
+[data-theme='dark'] .small {
+  color: var(--text-secondary) !important;
+}
+
+/* Fix time display and other dynamic text */
+[data-theme='dark'] .current-time,
+[data-theme='dark'] .server-time {
+  color: var(--text-primary) !important;
 }
 

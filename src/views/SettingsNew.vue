@@ -1,10 +1,16 @@
 <template>
   <div class="settings-page-new">
-    <div class="settings-header">
-      <h1>
-        <i class="bi bi-gear-fill me-3"></i>
-        {{ $t('settings.title') }}
-      </h1>
+    <!-- Modern Header -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="header-left">
+          <h1 class="page-title">
+            <i class="bi bi-gear-fill me-3"></i>
+            Settings
+          </h1>
+          <p class="page-subtitle">Manage your application preferences and configuration</p>
+        </div>
+      </div>
     </div>
 
     <div class="settings-layout">
@@ -546,23 +552,65 @@ export default {
   background: var(--bg-primary);
 }
 
-.settings-header {
-  background: var(--card-bg);
-  border-bottom: 1px solid var(--border-color);
-  padding: 2rem 2.5rem;
+/* Modern Header */
+.page-header {
+  background: linear-gradient(135deg, #FF2667 0%, #d91e63 100%);
+  padding: 2.5rem 3rem;
   margin-bottom: 0;
+  box-shadow: 0 4px 20px rgba(255, 38, 103, 0.3);
+  position: relative;
+  overflow: hidden;
 }
 
-.settings-header h1 {
-  font-size: 1.75rem;
+.page-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 38, 103, 0.9) 0%, rgba(217, 30, 99, 0.9) 100%);
+  z-index: 1;
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.header-left {
+  color: white;
+}
+
+.page-title {
+  font-size: 2rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #ffffff !important;
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.page-title i {
+  font-size: 1.75rem;
+  color: #ffffff !important;
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  color: #ffffff !important;
   margin: 0;
+  font-weight: 400;
+  opacity: 0.95;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .settings-layout {
   display: flex;
-  min-height: calc(100vh - 120px);
+  min-height: calc(100vh - 180px);
 }
 
 /* Sidebar */

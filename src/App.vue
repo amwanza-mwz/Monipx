@@ -41,7 +41,9 @@ export default {
 
     // Hide layout on login and setup pages
     const showLayout = computed(() => {
-      return route.path !== '/login' && route.path !== '/setup';
+      const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+      const isAuthPage = route.path === '/login' || route.path === '/setup';
+      return !isAuthPage && isAuthenticated;
     });
 
     async function checkSetup() {
