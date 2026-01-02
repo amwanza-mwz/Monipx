@@ -55,10 +55,17 @@ router.get('/:id', async (req, res) => {
 // Update monitor
 router.put('/:id', async (req, res) => {
   try {
+    console.log('📝 Updating monitor:', req.params.id);
+    console.log('📦 Request body:', JSON.stringify(req.body, null, 2));
+    console.log('🏷️  Group name received:', req.body.group_name);
+
     const monitor = await Monitor.update(req.params.id, req.body);
     if (!monitor) {
       return res.status(404).json({ error: 'Monitor not found' });
     }
+
+    console.log('✅ Monitor updated:', JSON.stringify(monitor, null, 2));
+    console.log('🏷️  Group name in updated monitor:', monitor.group_name);
 
     // Emit socket event
     const io = getIO(req);
@@ -68,6 +75,7 @@ router.put('/:id', async (req, res) => {
 
     res.json(monitor);
   } catch (error) {
+    console.error('❌ Error updating monitor:', error);
     res.status(500).json({ error: error.message });
   }
 });

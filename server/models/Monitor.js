@@ -109,6 +109,15 @@ class Monitor {
       enabled,
       expected_status_code,
       expected_keyword,
+      group_name,
+      description,
+      notification_enabled,
+      docker_container_name,
+      docker_host,
+      database_type,
+      database_name,
+      database_username,
+      database_password,
     } = data;
 
     const updates = [];
@@ -153,6 +162,42 @@ class Monitor {
     if (expected_keyword !== undefined) {
       updates.push('expected_keyword = ?');
       values.push(expected_keyword || null);
+    }
+    if (group_name !== undefined) {
+      updates.push('group_name = ?');
+      values.push(group_name ? group_name.trim() : null);
+    }
+    if (description !== undefined) {
+      updates.push('description = ?');
+      values.push(description || null);
+    }
+    if (notification_enabled !== undefined) {
+      updates.push('notification_enabled = ?');
+      values.push(notification_enabled ? 1 : 0);
+    }
+    if (docker_container_name !== undefined) {
+      updates.push('docker_container_name = ?');
+      values.push(docker_container_name || null);
+    }
+    if (docker_host !== undefined) {
+      updates.push('docker_host = ?');
+      values.push(docker_host || null);
+    }
+    if (database_type !== undefined) {
+      updates.push('database_type = ?');
+      values.push(database_type || null);
+    }
+    if (database_name !== undefined) {
+      updates.push('database_name = ?');
+      values.push(database_name || null);
+    }
+    if (database_username !== undefined) {
+      updates.push('database_username = ?');
+      values.push(database_username || null);
+    }
+    if (database_password !== undefined) {
+      updates.push('database_password = ?');
+      values.push(database_password || null);
     }
 
     if (updates.length === 0) {

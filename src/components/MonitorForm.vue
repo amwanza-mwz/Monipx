@@ -54,20 +54,49 @@
             <div class="row g-3 mb-3">
               <div class="col-md-6">
                 <label class="form-label">Group (Optional)</label>
-                <input
-                  v-model="form.group_name"
-                  type="text"
-                  class="form-control"
-                  placeholder="Type or select a group"
-                  list="existing-groups-list"
-                  autocomplete="off"
-                />
-                <datalist id="existing-groups-list">
-                  <option v-for="group in existingGroups" :key="group" :value="group">{{ group }}</option>
-                </datalist>
-                <small class="form-text text-muted d-block">
-                  <span v-if="existingGroups.length > 0">
-                    Existing groups: {{ existingGroups.join(', ') }}
+
+                <!-- Show dropdown if groups exist and not adding new -->
+                <div v-if="!isAddingNewGroup && existingGroups.length > 0">
+                  <select
+                    :value="form.group_name"
+                    class="form-select"
+                    @change="handleGroupSelection"
+                  >
+                    <option value="">-- No Group --</option>
+                    <option v-for="group in sortedGroups" :key="group" :value="group">
+                      {{ group }}
+                    </option>
+                    <option value="__ADD_NEW__">+ Add New Group</option>
+                  </select>
+                </div>
+
+                <!-- Show input for new group or when no groups exist -->
+                <div v-else>
+                  <div class="input-group">
+                    <input
+                      v-model="form.group_name"
+                      type="text"
+                      class="form-control"
+                      placeholder="Enter new group name"
+                      @input="handleGroupInput"
+                    />
+                    <button
+                      v-if="existingGroups.length > 0"
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      @click="cancelAddNewGroup"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+
+                <small class="form-text text-muted d-block mt-1">
+                  <span v-if="existingGroups.length > 0 && !isAddingNewGroup">
+                    Select existing group or add new one
+                  </span>
+                  <span v-else-if="isAddingNewGroup">
+                    Type a new group name (e.g., Production, Development)
                   </span>
                   <span v-else>
                     Type a group name (e.g., Production, Development)
@@ -369,6 +398,7 @@ export default {
   setup(props, { emit }) {
     const saving = ref(false);
     const existingGroups = ref([]);
+    const isAddingNewGroup = ref(false);
 
     const form = ref({
       name: '',
@@ -393,6 +423,11 @@ export default {
       email_recipients: '',
       notify_on_down: true,
       notify_on_recovery: true,
+    });
+
+    // Sorted groups alphabetically
+    const sortedGroups = computed(() => {
+      return [...existingGroups.value].sort((a, b) => a.localeCompare(b));
     });
 
     const targetLabel = computed(() => {
@@ -450,6 +485,33 @@ export default {
       }
     };
 
+    const handleGroupSelection = (event) => {
+      const value = event.target.value;
+      console.log('Group selection changed to:', value);
+
+      if (value === '__ADD_NEW__') {
+        // Switch to input mode for adding new group
+        isAddingNewGroup.value = true;
+        form.value.group_name = '';
+      } else {
+        // Set the selected group (including empty string for "No Group")
+        form.value.group_name = value;
+        isAddingNewGroup.value = false;
+      }
+
+      console.log('form.group_name is now:', form.value.group_name);
+    };
+
+    const handleGroupInput = () => {
+      // User is typing a new group name - nothing special needed
+    };
+
+    const cancelAddNewGroup = () => {
+      // Go back to dropdown
+      isAddingNewGroup.value = false;
+      form.value.group_name = '';
+    };
+
     const resetForm = () => {
       form.value = {
         name: '',
@@ -475,6 +537,8 @@ export default {
         notify_on_down: true,
         notify_on_recovery: true,
       };
+      // Reset group UI state
+      isAddingNewGroup.value = false;
     };
 
     const loadMonitorData = () => {
@@ -489,6 +553,8 @@ export default {
             }
           }
         });
+        // Ensure we're in dropdown mode when editing (not input mode)
+        isAddingNewGroup.value = false;
       } else {
         // Reset form for new monitor
         resetForm();
@@ -498,6 +564,46 @@ export default {
     const handleSubmit = async () => {
       try {
         saving.value = true;
+
+        // Validate required fields
+        if (!form.value.name || !form.value.name.trim()) {
+          alert('Please enter a monitor name');
+          saving.value = false;
+          return;
+        }
+
+        if (!form.value.type) {
+          alert('Please select a monitor type');
+          saving.value = false;
+          return;
+        }
+
+        if (!form.value.target || !form.value.target.trim()) {
+          alert('Please enter a target (URL, hostname, or IP address)');
+          saving.value = false;
+          return;
+        }
+
+        // Validate port for TCP monitors
+        if (form.value.type === 'tcp' && !form.value.port) {
+          alert('Please enter a port number for TCP monitoring');
+          saving.value = false;
+          return;
+        }
+
+        // Validate database fields
+        if (form.value.type === 'database') {
+          if (!form.value.database_type) {
+            alert('Please select a database type');
+            saving.value = false;
+            return;
+          }
+          if (!form.value.database_name || !form.value.database_name.trim()) {
+            alert('Please enter a database name');
+            saving.value = false;
+            return;
+          }
+        }
 
         // Clean up form data based on type
         const data = { ...form.value };
@@ -549,11 +655,16 @@ export default {
       form,
       saving,
       existingGroups,
+      sortedGroups,
+      isAddingNewGroup,
       targetLabel,
       targetPlaceholder,
       showPort,
       portRequired,
       handleSubmit,
+      handleGroupSelection,
+      handleGroupInput,
+      cancelAddNewGroup,
     };
   },
 };
@@ -669,6 +780,22 @@ export default {
 [data-theme='dark'] .trigger-card {
   background: var(--bg-primary);
   border-color: var(--border-color);
+}
+
+/* Required field indicator */
+.form-label.required::after {
+  content: ' *';
+  color: #dc3545;
+  font-weight: bold;
+}
+
+/* Form validation feedback */
+.form-control:invalid:not(:placeholder-shown) {
+  border-color: #dc3545;
+}
+
+.form-select:invalid {
+  border-color: #dc3545;
 }
 </style>
 
