@@ -192,7 +192,11 @@ export default {
       const groupSet = new Set();
       monitors.value.forEach(m => {
         if (m.group_name) {
-          groupSet.add(m.group_name);
+          // Trim whitespace to avoid duplicates from spacing differences
+          const trimmedGroup = m.group_name.trim();
+          if (trimmedGroup) {
+            groupSet.add(trimmedGroup);
+          }
         }
       });
       return Array.from(groupSet).sort();

@@ -53,17 +53,26 @@
 
             <div class="row g-3 mb-3">
               <div class="col-md-6">
-                <label class="form-label">Group</label>
+                <label class="form-label">Group (Optional)</label>
                 <input
                   v-model="form.group_name"
                   type="text"
                   class="form-control"
-                  placeholder="e.g., Production, Development"
-                  list="groups-list"
+                  placeholder="Type or select a group"
+                  list="existing-groups-list"
+                  autocomplete="off"
                 />
-                <datalist id="groups-list">
-                  <option v-for="group in existingGroups" :key="group" :value="group" />
+                <datalist id="existing-groups-list">
+                  <option v-for="group in existingGroups" :key="group" :value="group">{{ group }}</option>
                 </datalist>
+                <small class="form-text text-muted d-block">
+                  <span v-if="existingGroups.length > 0">
+                    Existing groups: {{ existingGroups.join(', ') }}
+                  </span>
+                  <span v-else>
+                    Type a group name (e.g., Production, Development)
+                  </span>
+                </small>
               </div>
 
               <div class="col-md-6">
@@ -434,10 +443,38 @@ export default {
     const loadGroups = async () => {
       try {
         const response = await api.get('/monitors/groups/list');
-        existingGroups.value = response.data.map(g => g.group_name);
+        // response.data is already an array of strings ['Production', 'Development']
+        existingGroups.value = response.data;
       } catch (error) {
         console.error('Error loading groups:', error);
       }
+    };
+
+    const resetForm = () => {
+      form.value = {
+        name: '',
+        type: '',
+        target: '',
+        description: '',
+        group_name: '',
+        port: null,
+        interval: 60,
+        timeout: 5000,
+        enabled: true,
+        expected_status_code: null,
+        expected_keyword: '',
+        docker_host: '',
+        docker_container_name: '',
+        database_type: '',
+        database_name: '',
+        database_username: '',
+        database_password: '',
+        notification_enabled: false,
+        notification_type: 'email',
+        email_recipients: '',
+        notify_on_down: true,
+        notify_on_recovery: true,
+      };
     };
 
     const loadMonitorData = () => {
@@ -452,6 +489,9 @@ export default {
             }
           }
         });
+      } else {
+        // Reset form for new monitor
+        resetForm();
       }
     };
 
@@ -461,6 +501,11 @@ export default {
 
         // Clean up form data based on type
         const data = { ...form.value };
+
+        // Trim group name to prevent duplicates from whitespace
+        if (data.group_name) {
+          data.group_name = data.group_name.trim();
+        }
 
         // Set docker_container_name for docker type
         if (data.type === 'docker') {
@@ -483,6 +528,18 @@ export default {
     };
 
     watch(() => props.monitor, loadMonitorData, { immediate: true });
+
+    // Reload groups when modal opens
+    watch(() => props.show, (newVal, oldVal) => {
+      if (newVal) {
+        loadGroups();
+        // Load monitor data or reset form
+        loadMonitorData();
+      } else if (oldVal && !newVal) {
+        // Modal is closing, reset form for next time
+        resetForm();
+      }
+    });
 
     onMounted(() => {
       loadGroups();
