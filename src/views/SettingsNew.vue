@@ -107,12 +107,6 @@
             <form v-else @submit.prevent="updateUser" class="account-form">
               <div class="form-group">
                 <label>
-                  <i class="bi bi-person-badge me-2"></i>{{ $t('settings.security.name') }}
-                </label>
-                <input type="text" class="form-control" v-model="userForm.name" placeholder="Your full name" />
-              </div>
-              <div class="form-group">
-                <label>
                   <i class="bi bi-person me-2"></i>{{ $t('settings.security.username') }}
                 </label>
                 <input type="text" class="form-control" v-model="userForm.username" required />
@@ -325,7 +319,6 @@ export default {
 
     // User form
     const userForm = ref({
-      name: '',
       username: '',
       email: '',
       password: '',
@@ -357,7 +350,6 @@ export default {
       try {
         loadingUser.value = true;
         const response = await api.get('/auth/me');
-        userForm.value.name = response.data.name || '';
         userForm.value.username = response.data.username;
         userForm.value.email = response.data.email || '';
       } catch (error) {
@@ -371,7 +363,6 @@ export default {
       try {
         savingUser.value = true;
         const updateData = {
-          name: userForm.value.name,
           username: userForm.value.username,
           email: userForm.value.email,
         };

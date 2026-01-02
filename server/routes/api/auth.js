@@ -103,15 +103,11 @@ router.get('/me', async (req, res) => {
       return res.status(404).json({ error: 'No user found' });
     }
 
-    // Get full user details including name
-    const fullUser = await User.getById(adminUser.id);
-
     res.json({
-      id: fullUser.id,
-      name: fullUser.name || '',
-      username: fullUser.username,
-      email: fullUser.email || '',
-      is_admin: fullUser.is_admin === 1,
+      id: adminUser.id,
+      username: adminUser.username,
+      email: adminUser.email || '',
+      is_admin: adminUser.is_admin === 1,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -121,7 +117,7 @@ router.get('/me', async (req, res) => {
 // Update user
 router.put('/me', async (req, res) => {
   try {
-    const { name, username, password, email } = req.body;
+    const { username, password, email } = req.body;
 
     const users = await User.getAll();
     const adminUser = users.find(u => u.is_admin === 1) || users[0];
@@ -131,7 +127,6 @@ router.put('/me', async (req, res) => {
     }
 
     const updatedUser = await User.update(adminUser.id, {
-      name,
       username,
       password,
       email,
@@ -141,7 +136,6 @@ router.put('/me', async (req, res) => {
       message: 'User updated successfully',
       user: {
         id: updatedUser.id,
-        name: updatedUser.name || '',
         username: updatedUser.username,
         email: updatedUser.email,
         is_admin: updatedUser.is_admin === 1,
