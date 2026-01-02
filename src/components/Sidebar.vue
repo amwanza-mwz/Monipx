@@ -163,6 +163,13 @@ export default {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   min-height: 80px;
   background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+  position: relative;
+}
+
+.sidebar.collapsed .sidebar-header {
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 0.5rem;
 }
 
 .sidebar-brand {
@@ -208,11 +215,18 @@ export default {
   padding: 0.5rem;
   border-radius: 4px;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .sidebar-toggle:hover {
   background-color: rgba(255, 255, 255, 0.1);
   color: #ff2667;
+}
+
+.sidebar.collapsed .sidebar-toggle {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .sidebar-nav {
