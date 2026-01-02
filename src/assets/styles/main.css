@@ -399,3 +399,86 @@ body {
   color: var(--text-primary) !important;
 }
 
+/* Fix text-muted and other text utilities in dark mode */
+[data-theme='dark'] .text-muted {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme='dark'] .text-success {
+  color: var(--success) !important;
+}
+
+[data-theme='dark'] .text-danger {
+  color: var(--danger) !important;
+}
+
+[data-theme='dark'] .text-warning {
+  color: var(--warning) !important;
+}
+
+[data-theme='dark'] .text-info {
+  color: var(--info) !important;
+}
+
+/* Fix small text in dark mode */
+[data-theme='dark'] small {
+  color: var(--text-secondary) !important;
+}
+
+/* Fix stat card footer text */
+[data-theme='dark'] .stat-card-footer small {
+  color: var(--text-secondary) !important;
+}
+
+/* Fix all headings in dark mode */
+[data-theme='dark'] h1,
+[data-theme='dark'] h2,
+[data-theme='dark'] h3,
+[data-theme='dark'] h4,
+[data-theme='dark'] h5,
+[data-theme='dark'] h6 {
+  color: var(--text-primary) !important;
+}
+
+/* Fix strong/bold text in dark mode */
+[data-theme='dark'] strong,
+[data-theme='dark'] .fw-bold {
+  color: var(--text-primary) !important;
+}
+
+/* Fix paragraphs in dark mode */
+[data-theme='dark'] p {
+  color: var(--text-primary) !important;
+}
+
+/* Fix labels in dark mode */
+[data-theme='dark'] label,
+[data-theme='dark'] .form-label {
+  color: var(--text-primary) !important;
+}
+
+/* Fix alert text in dark mode */
+[data-theme='dark'] .alert {
+  color: var(--text-primary) !important;
+}
+
+/* Fix list items in dark mode */
+[data-theme='dark'] li {
+  color: var(--text-primary) !important;
+}
+
+/* Fix span elements in dark mode */
+[data-theme='dark'] span:not(.badge):not(.spinner-border) {
+  color: inherit;
+}
+
+/* Fix div text in dark mode */
+[data-theme='dark'] .card-text {
+  color: var(--text-primary) !important;
+}
+
+/* Fix form text helper in dark mode */
+[data-theme='dark'] .form-text {
+  color: var(--text-secondary) !important;
+}
+
