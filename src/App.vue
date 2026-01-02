@@ -1,10 +1,15 @@
 <template>
   <div id="app" :data-theme="theme">
-    <Sidebar />
-    <TopBar />
-    <div class="main-content" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
+    <template v-if="showLayout">
+      <Sidebar />
+      <TopBar />
+      <div class="main-content" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
+        <router-view />
+      </div>
+    </template>
+    <template v-else>
       <router-view />
-    </div>
+    </template>
   </div>
 </template>
 
@@ -30,6 +35,11 @@ export default {
     const showNavbar = ref(true);
     const needsSetup = ref(false);
     const sidebarCollapsed = ref(localStorage.getItem('sidebarCollapsed') === 'true');
+
+    // Hide layout on login and setup pages
+    const showLayout = computed(() => {
+      return route.path !== '/login' && route.path !== '/setup';
+    });
 
     async function checkSetup() {
       try {
@@ -102,6 +112,7 @@ export default {
     return {
       theme,
       showNavbar,
+      showLayout,
       sidebarCollapsed,
     };
   },
