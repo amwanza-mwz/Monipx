@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
 // Create new subnet
 router.post('/', async (req, res) => {
   try {
-    const { name, subnet, description, tags, scan_interval, monitoring_enabled } = req.body;
+    const { name, subnet, description, tags, scan_enabled, scan_interval, monitoring_enabled } = req.body;
 
     if (!name || !subnet) {
       return res.status(400).json({ error: 'Name and subnet are required' });
@@ -36,6 +36,7 @@ router.post('/', async (req, res) => {
       subnet,
       description,
       tags,
+      scan_enabled,
       scan_interval,
       monitoring_enabled,
     });

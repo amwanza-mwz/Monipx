@@ -11,7 +11,7 @@ class Subnet {
   }
 
   static async create(data) {
-    const { name, subnet, description, tags, scan_interval, monitoring_enabled } = data;
+    const { name, subnet, description, tags, scan_enabled, scan_interval, monitoring_enabled } = data;
 
     // Parse CIDR notation
     const networkInfo = parseCIDR(subnet);
@@ -19,8 +19,8 @@ class Subnet {
     const stmt = db.prepare(`
       INSERT INTO subnets (
         name, subnet, cidr, network_address, total_ips,
-        description, tags, scan_interval, monitoring_enabled
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        description, tags, scan_enabled, scan_interval, monitoring_enabled
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = await stmt.run(
@@ -31,8 +31,9 @@ class Subnet {
       networkInfo.usableIPs,
       description || null,
       tags ? JSON.stringify(tags) : null,
-      scan_interval || 300,
-      monitoring_enabled !== undefined ? monitoring_enabled : 1
+      scan_enabled !== undefined ? (scan_enabled ? 1 : 0) : 1,
+      scan_interval || 1800,
+      monitoring_enabled !== undefined ? (monitoring_enabled ? 1 : 0) : 1
     );
 
     const subnetId = result.lastInsertRowid;

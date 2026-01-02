@@ -51,15 +51,34 @@
               />
               <small class="form-text text-muted">Comma-separated tags</small>
             </div>
-            <div class="mb-3">
-              <label class="form-label">{{ $t('subnets.scanInterval') }}</label>
+            <div class="mb-3 form-check">
               <input
-                type="number"
-                class="form-control"
-                v-model.number="formData.scan_interval"
-                min="60"
-                :placeholder="$t('subnets.scanInterval')"
+                type="checkbox"
+                class="form-check-input"
+                v-model="formData.scan_enabled"
+                id="scanEnabled"
               />
+              <label class="form-check-label" for="scanEnabled">
+                <strong>Enable Auto-Scan</strong>
+              </label>
+              <small class="form-text text-muted d-block">Automatically scan this subnet at regular intervals</small>
+            </div>
+            <div class="mb-3" v-if="formData.scan_enabled">
+              <label class="form-label">Auto-Scan Interval (minutes) *</label>
+              <select class="form-select" v-model.number="formData.scan_interval">
+                <option :value="60">1 minute</option>
+                <option :value="300">5 minutes</option>
+                <option :value="600">10 minutes</option>
+                <option :value="900">15 minutes</option>
+                <option :value="1800">30 minutes</option>
+                <option :value="3600">1 hour</option>
+                <option :value="7200">2 hours</option>
+                <option :value="14400">4 hours</option>
+                <option :value="21600">6 hours</option>
+                <option :value="43200">12 hours</option>
+                <option :value="86400">24 hours</option>
+              </select>
+              <small class="form-text text-muted">How often to automatically scan this subnet</small>
             </div>
             <div class="mb-3 form-check">
               <input
@@ -119,7 +138,8 @@ export default {
       subnet: '',
       description: '',
       tags: [],
-      scan_interval: 300,
+      scan_enabled: true,
+      scan_interval: 1800,
       monitoring_enabled: true,
     });
 
@@ -147,7 +167,8 @@ export default {
             formData.value.subnet = newSubnet.subnet || '';
             formData.value.description = newSubnet.description || '';
             formData.value.tags = tagsArray;
-            formData.value.scan_interval = newSubnet.scan_interval || 300;
+            formData.value.scan_enabled = newSubnet.scan_enabled !== undefined ? Boolean(newSubnet.scan_enabled) : true;
+            formData.value.scan_interval = newSubnet.scan_interval || 1800;
             formData.value.monitoring_enabled = newSubnet.monitoring_enabled !== undefined ? Boolean(newSubnet.monitoring_enabled) : true;
             tagsInput.value = tagsArray.join(', ');
           } else {
@@ -156,7 +177,8 @@ export default {
             formData.value.subnet = '';
             formData.value.description = '';
             formData.value.tags = [];
-            formData.value.scan_interval = 300;
+            formData.value.scan_enabled = true;
+            formData.value.scan_interval = 1800;
             formData.value.monitoring_enabled = true;
             tagsInput.value = '';
           }
