@@ -49,7 +49,7 @@ class User {
   }
 
   static async update(id, data) {
-    const { username, password, email } = data;
+    const { username, password, email, two_factor_enabled, two_factor_secret } = data;
     const updates = [];
     const values = [];
 
@@ -65,6 +65,14 @@ class User {
       const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
       updates.push('password_hash = ?');
       values.push(passwordHash);
+    }
+    if (two_factor_enabled !== undefined) {
+      updates.push('two_factor_enabled = ?');
+      values.push(two_factor_enabled ? 1 : 0);
+    }
+    if (two_factor_secret !== undefined) {
+      updates.push('two_factor_secret = ?');
+      values.push(two_factor_secret);
     }
 
     if (updates.length === 0) {

@@ -1173,6 +1173,12 @@ export default {
   font-weight: 500;
 }
 
+/* Make legend labels more visible in dark mode */
+[data-theme='dark'] .legend-label,
+[data-bs-theme='dark'] .legend-label {
+  color: #ffffff !important;
+}
+
 .chart-title {
   display: flex;
   align-items: center;

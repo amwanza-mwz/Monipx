@@ -90,13 +90,53 @@
   },
   "settings": {
     "title": "Settings",
-    "theme": "Theme",
-    "lightMode": "Light Mode",
-    "darkMode": "Dark Mode",
-    "language": "Language",
-    "english": "English",
-    "french": "French",
-    "save": "Save Settings"
+    "subtitle": "Manage your application preferences and configuration",
+    "sections": {
+      "general": "General",
+      "appearance": "Appearance",
+      "security": "Security",
+      "about": "About"
+    },
+    "general": {
+      "serverTimezone": "Server Timezone",
+      "currentTime": "Current server time"
+    },
+    "appearance": {
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "language": "Language"
+    },
+    "security": {
+      "account": "User Account",
+      "name": "Full Name",
+      "username": "Username",
+      "email": "Email Address",
+      "newPassword": "New Password",
+      "saveChanges": "Save Changes",
+      "twoFactor": "Two-Factor Authentication",
+      "twoFactorDesc": "Add an extra layer of security to your account by enabling two-factor authentication.",
+      "enable2FA": "Enable 2FA",
+      "disable2FA": "Disable 2FA",
+      "twoFactorEnabled": "Two-factor authentication is enabled",
+      "step1": "Step 1: Scan QR Code",
+      "scanQR": "Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)",
+      "manualEntry": "Or enter this code manually:",
+      "step2": "Step 2: Verify Code",
+      "enterCode": "Enter the 6-digit code from your authenticator app",
+      "verifyEnable": "Verify & Enable",
+      "2faSuccess": "Two-factor authentication enabled successfully!"
+    },
+    "about": {
+      "subtitle": "Network Monitoring & IP Management Platform",
+      "version": "Version",
+      "latestVersion": "Latest Version",
+      "developer": "Developer",
+      "contact": "Contact",
+      "checkUpdates": "Check for Updates",
+      "downloadUpdate": "Download Update",
+      "updateAvailable": "New version {version} is available!"
+    }
   },
   "common": {
     "save": "Save",
@@ -117,7 +157,8 @@
     "areYouSure": "Are you sure?",
     "yes": "Yes",
     "no": "No",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "done": "Done"
   },
   "errors": {
     "required": "This field is required",

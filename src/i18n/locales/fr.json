@@ -90,13 +90,53 @@
   },
   "settings": {
     "title": "Paramètres",
-    "theme": "Thème",
-    "lightMode": "Mode Clair",
-    "darkMode": "Mode Sombre",
-    "language": "Langue",
-    "english": "Anglais",
-    "french": "Français",
-    "save": "Enregistrer les Paramètres"
+    "subtitle": "Gérez vos préférences et la configuration de l'application",
+    "sections": {
+      "general": "Général",
+      "appearance": "Apparence",
+      "security": "Sécurité",
+      "about": "À propos"
+    },
+    "general": {
+      "serverTimezone": "Fuseau Horaire du Serveur",
+      "currentTime": "Heure actuelle du serveur"
+    },
+    "appearance": {
+      "theme": "Thème",
+      "light": "Clair",
+      "dark": "Sombre",
+      "language": "Langue"
+    },
+    "security": {
+      "account": "Compte Utilisateur",
+      "name": "Nom Complet",
+      "username": "Nom d'utilisateur",
+      "email": "Adresse Email",
+      "newPassword": "Nouveau Mot de Passe",
+      "saveChanges": "Enregistrer les Modifications",
+      "twoFactor": "Authentification à Deux Facteurs",
+      "twoFactorDesc": "Ajoutez une couche de sécurité supplémentaire à votre compte en activant l'authentification à deux facteurs.",
+      "enable2FA": "Activer 2FA",
+      "disable2FA": "Désactiver 2FA",
+      "twoFactorEnabled": "L'authentification à deux facteurs est activée",
+      "step1": "Étape 1 : Scanner le Code QR",
+      "scanQR": "Scannez ce code QR avec votre application d'authentification (Google Authenticator, Authy, etc.)",
+      "manualEntry": "Ou entrez ce code manuellement :",
+      "step2": "Étape 2 : Vérifier le Code",
+      "enterCode": "Entrez le code à 6 chiffres de votre application d'authentification",
+      "verifyEnable": "Vérifier et Activer",
+      "2faSuccess": "Authentification à deux facteurs activée avec succès !"
+    },
+    "about": {
+      "subtitle": "Plateforme de Surveillance Réseau et Gestion IP",
+      "version": "Version",
+      "latestVersion": "Dernière Version",
+      "developer": "Développeur",
+      "contact": "Contact",
+      "checkUpdates": "Vérifier les Mises à Jour",
+      "downloadUpdate": "Télécharger la Mise à Jour",
+      "updateAvailable": "La nouvelle version {version} est disponible !"
+    }
   },
   "common": {
     "save": "Enregistrer",
@@ -117,7 +157,8 @@
     "areYouSure": "Êtes-vous sûr ?",
     "yes": "Oui",
     "no": "Non",
-    "noResults": "Aucun résultat trouvé"
+    "noResults": "Aucun résultat trouvé",
+    "done": "Terminé"
   },
   "errors": {
     "required": "Ce champ est requis",

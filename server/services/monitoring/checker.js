@@ -31,6 +31,8 @@ class MonitorChecker {
         headers: {
           'User-Agent': this.userAgent,
         },
+        // Allow self-signed certificates for HTTPS
+        rejectUnauthorized: false,
       };
 
       const req = client.request(options, (res) => {

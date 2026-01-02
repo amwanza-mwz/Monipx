@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 
 // GitHub Repository Configuration
 // IMPORTANT: Update this with your actual GitHub username and repository name
-const GITHUB_REPO = 'arnoldmwanza/monipx'; // Format: username/repository
+const GITHUB_REPO = 'amwanza-mwz/Monipx'; // Format: username/repository
 const GITHUB_RELEASES_URL = `https://github.com/${GITHUB_REPO}/releases/latest`;
 const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
 

@@ -36,6 +36,30 @@ router.put('/theme', async (req, res) => {
   }
 });
 
+// Get timezone setting (must be before /:key route)
+router.get('/timezone', async (req, res) => {
+  try {
+    const value = await Settings.get('timezone');
+    res.json({ key: 'timezone', value: value || 'UTC' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update timezone (must be before /:key route)
+router.put('/timezone', async (req, res) => {
+  try {
+    const { timezone } = req.body;
+    if (!timezone) {
+      return res.status(400).json({ error: 'Timezone is required' });
+    }
+    await Settings.set('timezone', timezone);
+    res.json({ key: 'timezone', value: timezone });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get setting by key
 router.get('/:key', async (req, res) => {
   try {
