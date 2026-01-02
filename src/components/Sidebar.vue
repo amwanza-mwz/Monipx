@@ -46,6 +46,9 @@
           <router-link to="/settings" class="dropdown-item" @click="showUserDropdown = false">
             <i class="bi bi-gear me-2"></i>Settings
           </router-link>
+          <button class="dropdown-item logout-item" @click="handleLogout">
+            <i class="bi bi-box-arrow-right me-2"></i>Logout
+          </button>
         </div>
       </div>
     </div>
@@ -54,12 +57,14 @@
 
 <script>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { useThemeStore } from '../stores/theme';
 import api from '../services/api';
 
 export default {
   name: 'Sidebar',
   setup() {
+    const router = useRouter();
     const themeStore = useThemeStore();
     const theme = computed(() => themeStore.theme);
     const isCollapsed = ref(localStorage.getItem('sidebarCollapsed') === 'true');
@@ -94,6 +99,18 @@ export default {
       }
     }
 
+    function handleLogout() {
+      // Clear authentication
+      localStorage.removeItem('user');
+      localStorage.removeItem('isAuthenticated');
+
+      // Close dropdown
+      showUserDropdown.value = false;
+
+      // Redirect to login
+      router.push('/login');
+    }
+
     onMounted(() => {
       loadUser();
       document.addEventListener('click', handleClickOutside);
@@ -110,6 +127,7 @@ export default {
       showUserDropdown,
       toggleCollapse,
       toggleUserDropdown,
+      handleLogout,
     };
   },
 };
@@ -344,6 +362,19 @@ export default {
 }
 
 .dropdown-item:hover {
+  background: rgba(255, 38, 103, 0.15);
+  color: #ff2667;
+}
+
+.logout-item {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logout-item:hover {
   background: rgba(255, 38, 103, 0.15);
   color: #ff2667;
 }

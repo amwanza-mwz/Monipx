@@ -109,8 +109,8 @@ export default {
           password: formData.value.password,
         });
 
-        // Redirect to login or dashboard
-        router.push('/');
+        // Redirect to login page after successful setup
+        router.push('/login');
       } catch (err) {
         error.value = err.response?.data?.error || err.message || 'Setup failed';
       } finally {
