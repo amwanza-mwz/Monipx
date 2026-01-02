@@ -83,7 +83,12 @@ export default {
     function toggleCollapse() {
       isCollapsed.value = !isCollapsed.value;
       localStorage.setItem('sidebarCollapsed', isCollapsed.value.toString());
-      window.dispatchEvent(new Event('storage'));
+
+      // Dispatch custom event for immediate update
+      window.dispatchEvent(new CustomEvent('sidebar-toggle', {
+        detail: { collapsed: isCollapsed.value }
+      }));
+
       if (isCollapsed.value) {
         showUserDropdown.value = false;
       }

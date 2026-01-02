@@ -5,6 +5,7 @@ import router from './router';
 import i18n from './i18n';
 import { useThemeStore } from './stores/theme';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Import Bootstrap JavaScript
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './assets/styles/main.css';
 
@@ -22,6 +23,7 @@ const themeStore = useThemeStore();
 if (typeof window !== 'undefined') {
   const savedTheme = localStorage.getItem('theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
+  document.documentElement.setAttribute('data-bs-theme', savedTheme); // Bootstrap 5.3+ dark mode
   document.body.setAttribute('data-theme', savedTheme);
 }
 
@@ -30,6 +32,7 @@ themeStore.loadTheme().then(() => {
   const theme = themeStore.theme;
   if (typeof document !== 'undefined') {
     document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute('data-bs-theme', theme); // Bootstrap 5.3+ dark mode
     document.body.setAttribute('data-theme', theme);
   }
 });

@@ -19,22 +19,13 @@ router.get('/', async (req, res) => {
 // Create monitor
 router.post('/', async (req, res) => {
   try {
-    const { name, type, target, subnet_id, port, interval, timeout, enabled } = req.body;
+    const monitor = await Monitor.create(req.body);
 
-    if (!name || !type || !target) {
-      return res.status(400).json({ error: 'Name, type, and target are required' });
+    // Reload scheduler to pick up new monitor
+    const monitorScheduler = req.app.get('monitorScheduler');
+    if (monitorScheduler) {
+      await monitorScheduler.loadAndSchedule();
     }
-
-    const monitor = await Monitor.create({
-      name,
-      type,
-      target,
-      subnet_id,
-      port,
-      interval,
-      timeout,
-      enabled,
-    });
 
     // Emit socket event
     const io = getIO(req);
@@ -109,6 +100,64 @@ router.get('/:id/history', async (req, res) => {
     const limit = parseInt(req.query.limit) || 100;
     const history = await Monitor.getHistory(req.params.id, limit);
     res.json(history);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Check monitor now
+router.post('/:id/check', async (req, res) => {
+  try {
+    const monitorScheduler = req.app.get('monitorScheduler');
+    if (!monitorScheduler) {
+      return res.status(500).json({ error: 'Monitor scheduler not available' });
+    }
+
+    await monitorScheduler.checkNow(req.params.id);
+    const monitor = await Monitor.getById(req.params.id);
+
+    res.json(monitor);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all groups
+router.get('/groups/list', async (req, res) => {
+  try {
+    const groups = await Monitor.getAllGroups();
+    res.json(groups);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get monitors by group
+router.get('/groups/:groupName', async (req, res) => {
+  try {
+    const monitors = await Monitor.getByGroup(req.params.groupName);
+    res.json(monitors);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get group statistics
+router.get('/groups/:groupName/stats', async (req, res) => {
+  try {
+    const stats = await Monitor.getStatsByGroup(req.params.groupName);
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get uptime statistics
+router.get('/:id/uptime', async (req, res) => {
+  try {
+    const hours = parseInt(req.query.hours) || 24;
+    const stats = await Monitor.getUptimeStats(req.params.id, hours);
+    res.json(stats);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

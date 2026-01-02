@@ -46,3 +46,10 @@ coverage/
 tmp/
 temp/
 
+# Documentation (exclude unnecessary MD files)
+TASKS_V1.md
+PROJECT_SPECIFICATION.md
+CHANGELOG.md
+CONTRIBUTING.md
+TODO.md
+NOTES.md

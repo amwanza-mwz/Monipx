@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import { computed, ref, onMounted, watch } from 'vue';
+import { computed, ref, onMounted, watch, provide } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useThemeStore } from './stores/theme';
 import Sidebar from './components/Sidebar.vue';
@@ -35,6 +35,9 @@ export default {
     const showNavbar = ref(true);
     const needsSetup = ref(false);
     const sidebarCollapsed = ref(localStorage.getItem('sidebarCollapsed') === 'true');
+
+    // Provide sidebar state to all child components
+    provide('sidebarCollapsed', sidebarCollapsed);
 
     // Hide layout on login and setup pages
     const showLayout = computed(() => {
@@ -61,6 +64,7 @@ export default {
     watch(() => themeStore.theme, (newTheme) => {
       if (typeof document !== 'undefined') {
         document.documentElement.setAttribute('data-theme', newTheme);
+        document.documentElement.setAttribute('data-bs-theme', newTheme); // Bootstrap 5.3+ dark mode
         document.body.setAttribute('data-theme', newTheme);
         const app = document.getElementById('app');
         if (app) {
@@ -69,28 +73,30 @@ export default {
       }
     }, { immediate: true });
 
-    // Listen for sidebar collapse events
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'sidebarCollapsed') {
-        sidebarCollapsed.value = e.newValue === 'true';
-      }
-    });
+    // Listen for custom sidebar toggle event
+    const handleSidebarToggle = (event) => {
+      sidebarCollapsed.value = event.detail.collapsed;
+    };
 
     onMounted(async () => {
       checkSetup();
       showNavbar.value = route.path !== '/setup';
-      
+
+      // Listen for sidebar toggle events
+      window.addEventListener('sidebar-toggle', handleSidebarToggle);
+
       // Ensure theme is applied immediately
       const currentTheme = themeStore.theme;
       if (typeof document !== 'undefined') {
         document.documentElement.setAttribute('data-theme', currentTheme);
+        document.documentElement.setAttribute('data-bs-theme', currentTheme);
         document.body.setAttribute('data-theme', currentTheme);
         const app = document.getElementById('app');
         if (app) {
           app.setAttribute('data-theme', currentTheme);
         }
       }
-      
+
       // Load theme from database
       try {
         await themeStore.loadTheme();
@@ -98,6 +104,7 @@ export default {
         const updatedTheme = themeStore.theme;
         if (typeof document !== 'undefined') {
           document.documentElement.setAttribute('data-theme', updatedTheme);
+          document.documentElement.setAttribute('data-bs-theme', updatedTheme);
           document.body.setAttribute('data-theme', updatedTheme);
           const app = document.getElementById('app');
           if (app) {

@@ -89,10 +89,21 @@ app.set('io', io);
 
 // Start auto-scan scheduler
 const SubnetScheduler = require('./services/subnet/scheduler');
-const scheduler = new SubnetScheduler(io);
-scheduler.start().catch((error) => {
+const subnetScheduler = new SubnetScheduler(io);
+subnetScheduler.start().catch((error) => {
   console.error('❌ Failed to start subnet scheduler:', error);
 });
+
+// Start monitoring scheduler
+const MonitorScheduler = require('./services/monitoring/scheduler');
+const monitorScheduler = new MonitorScheduler(io);
+monitorScheduler.start().catch((error) => {
+  console.error('❌ Failed to start monitor scheduler:', error);
+});
+
+// Make schedulers available globally
+app.set('subnetScheduler', subnetScheduler);
+app.set('monitorScheduler', monitorScheduler);
 
 // Start server
 server.listen(PORT, () => {

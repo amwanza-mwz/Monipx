@@ -40,6 +40,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/monitoring/:id',
+    name: 'MonitorDetail',
+    component: () => import('../views/MonitorDetail.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/settings',
     name: 'Settings',
     component: () => import('../views/Settings.vue'),

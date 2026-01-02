@@ -143,8 +143,14 @@
                     <router-link :to="`/subnets/${subnet.id}`" class="btn btn-sm btn-outline-primary">
                       <i class="bi bi-eye me-1"></i>View Details
                     </router-link>
-                    <button class="btn btn-sm btn-outline-secondary" @click="scanSubnet(subnet.id)">
-                      <i class="bi bi-arrow-repeat me-1"></i>Scan
+                    <button
+                      class="btn btn-sm btn-outline-secondary"
+                      @click="scanSubnet(subnet.id)"
+                      :disabled="scanningSubnets.has(subnet.id)"
+                    >
+                      <span v-if="scanningSubnets.has(subnet.id)" class="spinner-border spinner-border-sm me-1"></span>
+                      <i v-else class="bi bi-arrow-repeat me-1"></i>
+                      <span class="text-nowrap">{{ scanningSubnets.has(subnet.id) ? 'Scanning' : 'Scan' }}</span>
                     </button>
                   </div>
                 </div>
@@ -207,6 +213,7 @@ export default {
     const subnets = ref([]);
     const loadingSubnets = ref(true);
     const scanningAll = ref(false);
+    const scanningSubnets = ref(new Set());
 
     async function loadDashboard() {
       try {
@@ -262,6 +269,7 @@ export default {
     }
 
     async function scanSubnet(subnetId) {
+      scanningSubnets.value.add(subnetId);
       try {
         const response = await api.post(`/subnets/${subnetId}/scan`);
         console.log('Scan initiated:', response.data);
@@ -269,10 +277,12 @@ export default {
         setTimeout(() => {
           loadSubnets();
           loadDashboard();
+          scanningSubnets.value.delete(subnetId);
         }, 2000);
       } catch (error) {
         console.error('Failed to scan subnet:', error);
         alert(error.response?.data?.error || 'Failed to scan subnet');
+        scanningSubnets.value.delete(subnetId);
       }
     }
 
@@ -307,6 +317,7 @@ export default {
       subnets,
       loadingSubnets,
       scanningAll,
+      scanningSubnets,
       getHealthClass,
       scanSubnet,
       scanAllSubnets,
