@@ -2,11 +2,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Install build dependencies
+RUN apk add --no-cache python3 make g++
+
 # Copy package files
 COPY package*.json ./
 
 # Install all dependencies (including dev dependencies for build)
-RUN npm ci && npm cache clean --force
+# Use npm install instead of npm ci since package-lock.json is not in git
+RUN npm install --legacy-peer-deps && npm cache clean --force
 
 # Copy application files
 COPY . .
