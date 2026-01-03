@@ -28,8 +28,8 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' })); // Increased limit for SSH keys
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Serve static files from dist (production)
 if (process.env.NODE_ENV === 'production') {
@@ -86,6 +86,11 @@ io.on('connection', (socket) => {
 
 // Make io available to routes
 app.set('io', io);
+
+// Initialize Terminal WebSocket
+const TerminalWebSocket = require('./services/websocket/TerminalWebSocket');
+const terminalWebSocket = new TerminalWebSocket(io);
+app.set('terminalWebSocket', terminalWebSocket);
 
 // Start auto-scan scheduler
 const SubnetScheduler = require('./services/subnet/scheduler');

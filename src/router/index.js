@@ -13,7 +13,7 @@ const routes = [
     path: '/setup',
     name: 'Setup',
     component: () => import('../views/Setup.vue'),
-    meta: { requiresGuest: true },
+    meta: { requiresGuest: true, hideLayout: true },
   },
   {
     path: '/',
@@ -43,6 +43,12 @@ const routes = [
     path: '/monitoring/:id',
     name: 'MonitorDetail',
     component: () => import('../views/MonitorDetail.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/secure-terminal',
+    name: 'SecureTerminal',
+    component: () => import('../views/SecureTerminal.vue'),
     meta: { requiresAuth: true },
   },
   {
@@ -78,6 +84,18 @@ router.beforeEach(async (to, from, next) => {
     }
   } catch (error) {
     console.error('Failed to check setup status:', error);
+    // If API fails, assume setup is needed and allow navigation to setup page
+    // This prevents the app from being stuck
+    if (to.path === '/setup') {
+      return next();
+    }
+    // If we can't check setup status, try to proceed but allow setup page
+    if (to.path !== '/setup' && to.path !== '/login') {
+      // If not authenticated and not on auth pages, redirect to login
+      if (!isAuthenticated) {
+        return next('/login');
+      }
+    }
   }
 
   // Check authentication requirements

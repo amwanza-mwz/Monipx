@@ -3,13 +3,14 @@ const router = express.Router();
 const Subnet = require('../../models/Subnet');
 const Monitor = require('../../models/Monitor');
 const db = require('../../database/db');
+const packageJson = require('../../../package.json');
 
 router.get('/', (req, res) => {
   try {
     res.json({
       status: 'ok',
       timestamp: new Date().toISOString(),
-      version: '1.0.0',
+      version: packageJson.version,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

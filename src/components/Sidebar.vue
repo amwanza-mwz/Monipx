@@ -32,6 +32,12 @@
         </div>
         <span v-if="!isCollapsed" class="nav-text">{{ $t('nav.monitoring') }}</span>
       </router-link>
+      <router-link to="/secure-terminal" class="nav-item" :title="$t('nav.secureTerminal')">
+        <div class="nav-icon">
+          <i class="bi bi-terminal"></i>
+        </div>
+        <span v-if="!isCollapsed" class="nav-text">{{ $t('nav.secureTerminal') }}</span>
+      </router-link>
     </nav>
     <div class="sidebar-footer">
       <div class="user-dropdown" :class="{ 'dropdown-open': showUserDropdown }">

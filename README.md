@@ -57,13 +57,52 @@ This project is a testament to solving real problems with open-source solutions,
 - **Response Time Tracking**: Monitor network performance
 - **Configurable Intervals**: Set custom scan and monitoring intervals
 
+### 🔐 Secure SSH Terminal (NEW in v1.1.0)
+- **Multi-Tab Terminal**: Open multiple SSH sessions in tabs with beautiful modern UI
+- **Session Management**:
+  - Save and organize SSH sessions by groups
+  - Beautiful session sidebar with search functionality
+  - Group management with expandable/collapsible groups
+  - Session state persisted across page refreshes
+- **SSH Key Authentication**:
+  - Secure key-based authentication with AES-256-GCM encryption
+  - Password authentication support with encrypted storage
+  - Passphrase support for double encryption of SSH keys
+- **Key Management**:
+  - Upload existing SSH keys (RSA, ED25519, ECDSA)
+  - Generate new SSH keys (RSA 2048/4096, ED25519)
+  - Manage multiple keys with descriptions
+  - Secure key storage with encryption
+- **Real-time Terminal**:
+  - Full xterm.js terminal with WebSocket communication
+  - Multiple color schemes (Dracula, Monokai, Solarized Dark/Light, etc.)
+  - Configurable terminal types (xterm-256color, xterm, vt100, etc.)
+  - Copy/paste support
+  - Scrollback buffer
+- **Connection Features**:
+  - Auto-reconnect on disconnect
+  - Configurable keep-alive to prevent timeouts
+  - Connection logging with timestamps and statistics
+  - Session status indicators (connected, disconnected, error)
+- **Security**:
+  - All credentials encrypted at rest with AES-256-GCM
+  - Secure WebSocket communication
+  - No plaintext storage of passwords or keys
+  - Environment-based encryption key management
+
 ### 🎨 Modern UI/UX
 - **Beautiful Interface**: Built with Vue 3 and Bootstrap 5
-- **Collapsible Sidebar**: Modern navigation menu that can collapse/expand
-- **Real-time Dashboard**: Live updates without page refresh
-- **Responsive Design**: Works on desktop, tablet, and mobile
-- **Dark Mode**: Full dark mode support with improved styling
+- **Collapsible Sidebar**: Modern navigation menu that can collapse/expand with state persistence
+- **Real-time Dashboard**: Live updates without page refresh via WebSocket
+- **Responsive Design**: Works perfectly on desktop, tablet, and mobile
+- **Dark Mode**: Full dark mode support with improved styling and contrast
 - **Internationalization**: Support for multiple languages (English, French)
+- **Modern Components**:
+  - Beautiful session list with modern cards
+  - Action buttons with hover effects
+  - Search functionality across all views
+  - Loading states and animations
+  - Toast notifications for user feedback
 
 ---
 
@@ -75,6 +114,16 @@ This project is a testament to solving real problems with open-source solutions,
 # Clone the repository
 git clone https://github.com/mwzconnect/monipx.git
 cd monipx
+
+# Generate a secure SSH encryption key (IMPORTANT for production!)
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+# Set the SSH_ENCRYPTION_KEY environment variable
+# Option 1: Create a .env file
+echo "SSH_ENCRYPTION_KEY=your-generated-key-here" > .env
+
+# Option 2: Export as environment variable
+export SSH_ENCRYPTION_KEY=your-generated-key-here
 
 # Start the application
 docker-compose up -d --build
@@ -89,6 +138,8 @@ docker-compose down
 Access Monipx at `http://localhost:3001`
 
 On first launch, you'll be prompted to create an admin account.
+
+**⚠️ IMPORTANT**: For production deployments, you **MUST** set a secure `SSH_ENCRYPTION_KEY` environment variable. This key is used to encrypt SSH private keys stored in the database. Without it, a default insecure key will be used.
 
 ### Docker Command
 
@@ -212,7 +263,21 @@ The specification includes:
 - [x] Docker containerization
 - [x] Admin user creation on first run
 
-### 🔄 Version 1.1 (Planned)
+### ✅ Version 1.1.0 (Current)
+- [x] Secure SSH Terminal with multi-tab support
+- [x] SSH Session Management with groups
+- [x] SSH Key Management (upload, generate, encrypt)
+- [x] Real-time terminal with xterm.js
+- [x] Password and key-based authentication
+- [x] AES-256-GCM encryption for credentials
+- [x] Connection logging and statistics
+- [x] Multiple terminal color schemes
+- [x] Session state persistence
+- [x] Auto-reconnect and keep-alive
+- [x] Beautiful modern UI for terminal
+- [x] Search functionality for sessions
+
+### 🔄 Version 1.2 (Planned)
 - [ ] HTTP/HTTPS monitoring
 - [ ] TCP monitoring
 - [ ] DNS monitoring
@@ -284,7 +349,7 @@ For issues, questions, or contributions, please open an issue on GitHub.
 
 **Status**: ✅ Active Development | 🚀 Ready for Production Use
 
-**Version**: 1.0.0
+**Version**: 1.1.0
 
 ---
 

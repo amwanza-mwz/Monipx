@@ -17,9 +17,9 @@
 import { computed, ref, onMounted, watch, provide } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useThemeStore } from './stores/theme';
+import { useUpdateStore } from './stores/update';
 import Sidebar from './components/Sidebar.vue';
 import TopBar from './components/TopBar.vue';
-import api from './services/api';
 
 export default {
   name: 'App',
@@ -31,9 +31,9 @@ export default {
     const route = useRoute();
     const router = useRouter();
     const themeStore = useThemeStore();
+    const updateStore = useUpdateStore();
     const theme = computed(() => themeStore.theme);
     const showNavbar = ref(true);
-    const needsSetup = ref(false);
     const sidebarCollapsed = ref(localStorage.getItem('sidebarCollapsed') === 'true');
 
     // Provide sidebar state to all child components
@@ -43,20 +43,15 @@ export default {
     const showLayout = computed(() => {
       const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
       const isAuthPage = route.path === '/login' || route.path === '/setup';
-      return !isAuthPage && isAuthenticated;
-    });
 
-    async function checkSetup() {
-      try {
-        const response = await api.get('/auth/setup-status');
-        if (response.data.needs_setup && route.path !== '/setup') {
-          needsSetup.value = true;
-          router.push('/setup');
-        }
-      } catch (error) {
-        console.error('Failed to check setup status:', error);
+      // Never show layout on auth pages
+      if (isAuthPage) {
+        return false;
       }
-    }
+
+      // Only show layout if authenticated
+      return isAuthenticated;
+    });
 
     watch(() => route.path, (newPath) => {
       showNavbar.value = newPath !== '/setup';
@@ -81,7 +76,6 @@ export default {
     };
 
     onMounted(async () => {
-      checkSetup();
       showNavbar.value = route.path !== '/setup';
 
       // Listen for sidebar toggle events
@@ -97,6 +91,13 @@ export default {
         if (app) {
           app.setAttribute('data-theme', currentTheme);
         }
+      }
+
+      // Load current version from API
+      try {
+        await updateStore.loadCurrentVersion();
+      } catch (error) {
+        console.error('Failed to load current version:', error);
       }
 
       // Load theme from database

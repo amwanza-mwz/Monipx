@@ -13,6 +13,9 @@ services:
       - PORT=3001
       - DB_PATH=/app/data
       - LOG_LEVEL=info
+      # IMPORTANT: Set a secure SSH_ENCRYPTION_KEY for production
+      # Generate using: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+      - SSH_ENCRYPTION_KEY=${SSH_ENCRYPTION_KEY:-change-this-to-a-secure-32-byte-hex-key}
     networks:
       - monipx-network
     healthcheck:

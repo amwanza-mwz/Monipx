@@ -1,6 +1,6 @@
 {
   "name": "monipx",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A self-hosted IP address inventory and network monitoring tool",
   "main": "server/server.js",
   "scripts": {
@@ -11,6 +11,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "node server/server.js",
+    "migrate": "node run-migrations.js",
+    "verify-db": "node verify-database.js",
+    "db:reset": "rm -f data/monipx.db && node run-migrations.js",
     "test": "jest",
     "lint": "eslint . --ext .js,.vue",
     "format": "prettier --write \"**/*.{js,json,vue,md}\""
@@ -37,9 +40,10 @@
     "ping": "^0.4.4",
     "qrcode": "^1.5.4",
     "redis": "^5.10.0",
-    "socket.io": "^4.7.2",
+    "socket.io": "^4.8.3",
     "speakeasy": "^2.0.0",
     "sqlite3": "^5.1.6",
+    "ssh2": "^1.17.0",
     "winston": "^3.11.0"
   },
   "devDependencies": {
@@ -60,7 +64,11 @@
     "vue": "^3.3.11",
     "vue-chartjs": "^5.2.0",
     "vue-i18n": "^9.8.0",
-    "vue-router": "^4.2.5"
+    "vue-router": "^4.2.5",
+    "xterm": "^5.3.0",
+    "xterm-addon-fit": "^0.8.0",
+    "xterm-addon-search": "^0.13.0",
+    "xterm-addon-web-links": "^0.9.0"
   },
   "engines": {
     "node": ">=20.4.0",

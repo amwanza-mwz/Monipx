@@ -8,7 +8,7 @@ const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/releases/lat
 
 export const useUpdateStore = defineStore('update', {
   state: () => ({
-    currentVersion: 'v1.0.0',
+    currentVersion: '',
     latestVersion: '',
     updateAvailable: false,
     lastCheck: null,
@@ -17,9 +17,28 @@ export const useUpdateStore = defineStore('update', {
   }),
 
   actions: {
+    async loadCurrentVersion() {
+      try {
+        // Fetch current version from the backend API
+        const response = await fetch('/api/status');
+        const data = await response.json();
+        this.currentVersion = `v${data.version}`;
+        console.log('📦 Current version loaded:', this.currentVersion);
+      } catch (error) {
+        console.error('Failed to load current version:', error);
+        this.currentVersion = 'v1.1.0'; // Fallback
+      }
+    },
+
     async checkForUpdates() {
       try {
         this.checking = true;
+
+        // Make sure we have the current version first
+        if (!this.currentVersion) {
+          await this.loadCurrentVersion();
+        }
+
         const response = await fetch(GITHUB_API_URL);
 
         // Check if repository exists
@@ -31,18 +50,18 @@ export const useUpdateStore = defineStore('update', {
         }
 
         const data = await response.json();
-        
+
         this.latestVersion = data.tag_name || 'Unknown';
         this.lastCheck = new Date();
-        
+
         // Compare versions
         this.updateAvailable = this.latestVersion !== this.currentVersion;
-        
+
         // Store in localStorage
         localStorage.setItem('lastUpdateCheck', this.lastCheck.toISOString());
         localStorage.setItem('latestVersion', this.latestVersion);
         localStorage.setItem('updateAvailable', this.updateAvailable.toString());
-        
+
         return this.updateAvailable;
       } catch (error) {
         console.error('Failed to check for updates:', error);
