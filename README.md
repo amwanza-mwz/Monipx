@@ -1,6 +1,6 @@
 # Monipx
 
-**A self-hosted IP address inventory and network monitoring tool**
+**Self-hosted network monitoring & IP inventory tool with SSH terminal - Track subnets, monitor uptime**
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
@@ -8,7 +8,30 @@
 [![Docker Hub](https://img.shields.io/badge/docker%20hub-mwanzaa12%2Fmonipx-blue)](https://hub.docker.com/r/mwanzaa12/monipx)
 [![GHCR](https://img.shields.io/badge/ghcr-amwanza--mwz%2Fmonipx-blue)](https://github.com/amwanza-mwz/monipx/pkgs/container/monipx)
 
-Monipx is an open-source, self-hosted monitoring tool designed to manage IP addresses within subnets and monitor network resources. It combines IP address inventory management with uptime monitoring capabilities, similar to Uptime Kuma.
+A powerful, self-hosted solution for managing IP addresses across multiple subnets and monitoring network resources in real-time. Perfect for network administrators, IT teams, and anyone managing multiple servers or network segments.
+
+## 🎯 Key Features
+
+- **Multi-Subnet IP Management** - Track and manage IPs across multiple subnets (/24, /16, /8) with automatic discovery
+- **Real-Time Network Monitoring** - Monitor uptime with Ping, HTTP/HTTPS, TCP, DNS, and WebSocket support
+- **Secure SSH Terminal** - Built-in multi-tab terminal with AES-256-GCM encryption and session management
+- **Beautiful Dashboard** - Modern Vue 3 UI with dark mode, real-time updates, and responsive design
+- **Uptime Statistics** - Track availability, response times, charts, and network health metrics
+
+## 🚀 Quick Start
+
+```bash
+docker run -d --name monipx --restart=unless-stopped \
+  -p 3000:3000 -p 3001:3001 \
+  -v monipx-data:/app/data \
+  -e NODE_ENV=production \
+  -e "SSH_ENCRYPTION_KEY=$(openssl rand -base64 32)" \
+  mwanzaa12/monipx:v1.1.1
+```
+
+**Access:** http://localhost:3000
+
+**Platforms:** linux/amd64, linux/arm64 (Mac M1/M2, Raspberry Pi)
 
 ---
 
