@@ -5,8 +5,25 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20.4-green.svg)](https://nodejs.org/)
+[![Docker Hub](https://img.shields.io/badge/docker%20hub-mwanzaa12%2Fmonipx-blue)](https://hub.docker.com/r/mwanzaa12/monipx)
+[![GHCR](https://img.shields.io/badge/ghcr-amwanza--mwz%2Fmonipx-blue)](https://github.com/amwanza-mwz/monipx/pkgs/container/monipx)
 
 Monipx is an open-source, self-hosted monitoring tool designed to manage IP addresses within subnets and monitor network resources. It combines IP address inventory management with uptime monitoring capabilities, similar to Uptime Kuma.
+
+---
+
+## 📚 Documentation
+
+**Quick Links:**
+- ⚡ **[Quick Install Guide](QUICK_INSTALL.md)** - Get running in 2 minutes
+- 🚀 **[Quick Start Guide](QUICK_START.md)** - 5-minute deployment
+- 📖 **[Production Deployment Guide](MY_DEPLOYMENT_GUIDE.md)** - Complete step-by-step guide
+- 📚 **[Knowledge Base](KNOWLEDGE_BASE.md)** - Complete technical reference
+- 🗺️ **[Documentation Index](00_START_HERE.md)** - Start here for all documentation
+
+**Docker Images:**
+- Docker Hub: `docker pull mwanzaa12/monipx:v1.1.1`
+- GitHub Container Registry: `docker pull ghcr.io/amwanza-mwz/monipx:latest`
 
 ---
 
@@ -115,83 +132,338 @@ This project is a testament to solving real problems with open-source solutions,
 
 ---
 
-## 🚀 Quick Start
+## ⚡ Quick Installation (Fastest Way!)
 
-### Docker Compose (Recommended)
+**Get Monipx running on Ubuntu in 2 minutes!**
+
+### Step 1: Generate Encryption Key
+
+Copy and paste **BOTH lines** into your Ubuntu terminal:
+
+```bash
+export SSH_ENCRYPTION_KEY=$(openssl rand -base64 32)
+echo "SSH_ENCRYPTION_KEY=$SSH_ENCRYPTION_KEY" > ~/.monipx_env
+```
+
+Verify it was created:
+```bash
+cat ~/.monipx_env
+```
+
+### Step 2: Pull Docker Image
+
+```bash
+docker pull mwanzaa12/monipx:v1.1.1
+```
+
+### Step 3: Start Monipx
+
+```bash
+docker run -d \
+  --name monipx \
+  --restart=unless-stopped \
+  -p 3000:3000 \
+  -p 3001:3001 \
+  -v monipx-data:/app/data \
+  -v monipx-logs:/app/logs \
+  -e NODE_ENV=production \
+  -e "SSH_ENCRYPTION_KEY=$(cat ~/.monipx_env | cut -d'=' -f2)" \
+  mwanzaa12/monipx:v1.1.1
+```
+
+### Step 4: Access Monipx
+
+Open your browser: **`http://YOUR_SERVER_IP:3000`**
+
+**Example:** `http://10.201.30.23:3000`
+
+**📖 Full Quick Install Guide:** [QUICK_INSTALL.md](QUICK_INSTALL.md)
+
+---
+
+## 🚀 Alternative Installation Methods
+
+### Docker Compose (For Development)
 
 ```bash
 # Clone the repository
 git clone https://github.com/mwzconnect/monipx.git
 cd monipx
 
-# Generate a secure SSH encryption key (IMPORTANT for production!)
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-
-# Set the SSH_ENCRYPTION_KEY environment variable
-# Option 1: Create a .env file
-echo "SSH_ENCRYPTION_KEY=your-generated-key-here" > .env
-
-# Option 2: Export as environment variable
-export SSH_ENCRYPTION_KEY=your-generated-key-here
+# Generate a secure SSH encryption key
+export SSH_ENCRYPTION_KEY=$(openssl rand -base64 32)
+echo "SSH_ENCRYPTION_KEY=$SSH_ENCRYPTION_KEY" > .env
 
 # Start the application
 docker-compose up -d --build
 
 # View logs
 docker-compose logs -f
-
-# Stop the application
-docker-compose down
 ```
 
-Access Monipx at `http://localhost:3001`
+Access Monipx at `http://localhost:3000`
 
-On first launch, you'll be prompted to create an admin account.
+**⚠️ IMPORTANT**: The `SSH_ENCRYPTION_KEY` encrypts SSH credentials in the database. Keep it safe!
 
-**⚠️ IMPORTANT**: For production deployments, you **MUST** set a secure `SSH_ENCRYPTION_KEY` environment variable. This key is used to encrypt SSH private keys stored in the database. Without it, a default insecure key will be used.
+---
 
-### Docker Run (Recommended)
+## 🖥️ Ubuntu Server Deployment Guide
+
+> 📘 **Quick Deploy**: Use our automated deployment script!
+> ```bash
+> curl -fsSL https://raw.githubusercontent.com/amwanza-mwz/Monipx/main/deploy-ubuntu.sh | bash
+> ```
+>
+> 📖 **Full Guide**: See [UBUNTU_DEPLOYMENT.md](UBUNTU_DEPLOYMENT.md) for detailed instructions
+
+### Prerequisites
+
+Before deploying on Ubuntu server, ensure you have:
 
 ```bash
-# Generate a secure encryption key first
-export SSH_ENCRYPTION_KEY=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+# Update system packages
+sudo apt update && sudo apt upgrade -y
 
-# Option 1: Pull from Docker Hub (Recommended for most users)
-docker run -d \
-  --name monipx \
-  --restart=unless-stopped \
-  -p 3001:3001 \
-  -v monipx-data:/app/data \
-  -v monipx-logs:/app/logs \
-  -e NODE_ENV=production \
-  -e SSH_ENCRYPTION_KEY=$SSH_ENCRYPTION_KEY \
-  amwanzamwz/monipx:latest
+# Install Docker (if not already installed)
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
 
-# Option 2: Pull from GitHub Container Registry
-docker run -d \
-  --name monipx \
-  --restart=unless-stopped \
-  -p 3001:3001 \
-  -v monipx-data:/app/data \
-  -v monipx-logs:/app/logs \
-  -e NODE_ENV=production \
-  -e SSH_ENCRYPTION_KEY=$SSH_ENCRYPTION_KEY \
-  ghcr.io/amwanza-mwz/monipx:latest
+# Add your user to docker group (to run docker without sudo)
+sudo usermod -aG docker $USER
 
-# Or use a specific version
-docker run -d \
-  --name monipx \
-  --restart=unless-stopped \
-  -p 3001:3001 \
-  -v monipx-data:/app/data \
-  -v monipx-logs:/app/logs \
-  -e NODE_ENV=production \
-  -e SSH_ENCRYPTION_KEY=$SSH_ENCRYPTION_KEY \
-  amwanzamwz/monipx:v1.1.0
+# Log out and back in for group changes to take effect
+# Or run: newgrp docker
+
+# Verify Docker installation
+docker --version
+docker ps
 ```
 
+### Step-by-Step Deployment
+
+#### Option 1: Quick Deploy with Docker Run (Recommended)
+
+```bash
+# 1. Generate a secure encryption key
+export SSH_ENCRYPTION_KEY=$(openssl rand -base64 32)
+
+# 2. Save the key for future use (IMPORTANT!)
+echo "SSH_ENCRYPTION_KEY=$SSH_ENCRYPTION_KEY" >> ~/.monipx_env
+echo "⚠️  IMPORTANT: Save this key! Stored in ~/.monipx_env"
+
+# 3. Pull and run Monipx from Docker Hub
+docker run -d \
+  --name monipx \
+  --restart=unless-stopped \
+  -p 3000:3000 \
+  -p 3001:3001 \
+  -v monipx-data:/app/data \
+  -v monipx-logs:/app/logs \
+  -e NODE_ENV=production \
+  -e SSH_ENCRYPTION_KEY=$SSH_ENCRYPTION_KEY \
+  mwanzaa12/monipx:latest
+
+# 4. Check if container is running
+docker ps | grep monipx
+
+# 5. View logs
+docker logs -f monipx
+```
+
+**Access your server:**
+- Web Interface: `http://YOUR_SERVER_IP:3000`
+- WebSocket: `ws://YOUR_SERVER_IP:3001`
+
+#### Option 2: Deploy with Docker Compose (Production)
+
+```bash
+# 1. Create a directory for Monipx
+mkdir -p ~/monipx && cd ~/monipx
+
+# 2. Generate encryption key
+export SSH_ENCRYPTION_KEY=$(openssl rand -base64 32)
+
+# 3. Create .env file
+cat > .env << EOF
+NODE_ENV=production
+SSH_ENCRYPTION_KEY=$SSH_ENCRYPTION_KEY
+PORT=3000
+WS_PORT=3001
+EOF
+
+# 4. Create docker-compose.yml
+cat > docker-compose.yml << 'EOF'
+version: '3.8'
+
+services:
+  monipx:
+    image: mwanzaa12/monipx:latest
+    container_name: monipx
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    volumes:
+      - monipx-data:/app/data
+      - monipx-logs:/app/logs
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - SSH_ENCRYPTION_KEY=${SSH_ENCRYPTION_KEY}
+      - PORT=${PORT}
+      - WS_PORT=${WS_PORT}
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  monipx-data:
+    driver: local
+  monipx-logs:
+    driver: local
+EOF
+
+# 5. Start Monipx
+docker-compose up -d
+
+# 6. Check status
+docker-compose ps
+docker-compose logs -f
+```
+
+### Firewall Configuration
+
+If you have UFW (Uncomplicated Firewall) enabled:
+
+```bash
+# Allow HTTP port (3000)
+sudo ufw allow 3000/tcp
+
+# Allow WebSocket port (3001)
+sudo ufw allow 3001/tcp
+
+# Check firewall status
+sudo ufw status
+```
+
+### Setting Up Reverse Proxy with Nginx (Optional)
+
+For production with a domain name:
+
+```bash
+# 1. Install Nginx
+sudo apt install nginx -y
+
+# 2. Create Nginx configuration
+sudo nano /etc/nginx/sites-available/monipx
+
+# 3. Add this configuration:
+```
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;  # Replace with your domain
+
+    # Main application
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # WebSocket endpoint
+    location /socket.io/ {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+
+```bash
+# 4. Enable the site
+sudo ln -s /etc/nginx/sites-available/monipx /etc/nginx/sites-enabled/
+
+# 5. Test Nginx configuration
+sudo nginx -t
+
+# 6. Restart Nginx
+sudo systemctl restart nginx
+
+# 7. (Optional) Install SSL with Let's Encrypt
+sudo apt install certbot python3-certbot-nginx -y
+sudo certbot --nginx -d your-domain.com
+```
+
+### Useful Management Commands
+
+```bash
+# View logs
+docker logs -f monipx
+
+# Restart container
+docker restart monipx
+
+# Stop container
+docker stop monipx
+
+# Start container
+docker start monipx
+
+# Update to latest version
+docker pull mwanzaa12/monipx:latest
+docker stop monipx
+docker rm monipx
+# Then run the docker run command again with same volumes
+
+# Backup data
+docker run --rm -v monipx-data:/data -v $(pwd):/backup ubuntu tar czf /backup/monipx-backup-$(date +%Y%m%d).tar.gz /data
+
+# Restore data
+docker run --rm -v monipx-data:/data -v $(pwd):/backup ubuntu tar xzf /backup/monipx-backup-YYYYMMDD.tar.gz -C /
+```
+
+### Troubleshooting
+
+```bash
+# Check if container is running
+docker ps -a | grep monipx
+
+# View container logs
+docker logs monipx
+
+# Check container resource usage
+docker stats monipx
+
+# Enter container shell
+docker exec -it monipx sh
+
+# Check port bindings
+sudo netstat -tulpn | grep -E '3000|3001'
+
+# Restart Docker service
+sudo systemctl restart docker
+```
+
+---
+
+## 📦 Docker Images
+
 **Available on Multiple Registries:**
-- 🐳 **Docker Hub**: [`amwanzamwz/monipx`](https://hub.docker.com/r/amwanzamwz/monipx)
+- 🐳 **Docker Hub**: [`mwanzaa12/monipx`](https://hub.docker.com/r/mwanzaa12/monipx)
 - 📦 **GitHub Container Registry**: [`ghcr.io/amwanza-mwz/monipx`](https://github.com/amwanza-mwz/Monipx/pkgs/container/monipx)
 
 **Features:**
@@ -199,6 +471,19 @@ docker run -d \
 - ✅ Automatic builds with GitHub Actions
 - ✅ Published to both Docker Hub and GHCR
 - ✅ Semantic versioning (latest, v1.1.0, 1.1, 1)
+
+**Pull Commands:**
+```bash
+# From Docker Hub (Recommended)
+docker pull mwanzaa12/monipx:latest
+docker pull mwanzaa12/monipx:v1.1.0
+
+# From GitHub Container Registry
+docker pull ghcr.io/amwanza-mwz/monipx:latest
+docker pull ghcr.io/amwanza-mwz/monipx:v1.1.0
+```
+
+---
 
 ### Non-Docker Installation
 
