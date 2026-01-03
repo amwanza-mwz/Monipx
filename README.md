@@ -51,11 +51,20 @@ This project is a testament to solving real problems with open-source solutions,
 ### 📊 Network Monitoring
 - **Subnet Scanning**: Ping all IPs in a subnet to detect connected devices
 - **Real-time Updates**: Live status updates via WebSocket
-- **Multiple Monitor Types**: Ping, HTTP/HTTPS, TCP, DNS, WebSocket (coming soon)
+- **Multiple Monitor Types**:
+  - ✅ Ping monitoring
+  - ✅ HTTP/HTTPS monitoring with status code validation
+  - ✅ TCP port monitoring
+  - ✅ DNS resolution monitoring
+  - ✅ WebSocket connection monitoring
+- **Monitor Groups**: Organize monitors into collapsible groups
 - **Subnet Health Tracking**: Health scores and trends per subnet
-- **Uptime Statistics**: Track uptime percentage per subnet
-- **Response Time Tracking**: Monitor network performance
+- **Uptime Statistics**: Track uptime percentage and availability
+- **Response Time Tracking**: Monitor network performance with graphs
 - **Configurable Intervals**: Set custom scan and monitoring intervals
+- **Alert Thresholds**: Configure custom alert conditions
+- **Status History**: Track monitor status changes over time
+- **Charts & Graphs**: Beautiful visualizations with dark mode support
 
 ### 🔐 Secure SSH Terminal (NEW in v1.1.0)
 - **Multi-Tab Terminal**: Open multiple SSH sessions in tabs with beautiful modern UI
@@ -141,17 +150,36 @@ On first launch, you'll be prompted to create an admin account.
 
 **⚠️ IMPORTANT**: For production deployments, you **MUST** set a secure `SSH_ENCRYPTION_KEY` environment variable. This key is used to encrypt SSH private keys stored in the database. Without it, a default insecure key will be used.
 
-### Docker Command
+### Docker Run (Pull from Docker Hub)
 
 ```bash
+# Generate a secure encryption key first
+export SSH_ENCRYPTION_KEY=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+
+# Run Monipx container
 docker run -d \
-  --restart=always \
+  --name monipx \
+  --restart=unless-stopped \
   -p 3001:3001 \
   -v monipx-data:/app/data \
   -v monipx-logs:/app/logs \
+  -e NODE_ENV=production \
+  -e SSH_ENCRYPTION_KEY=$SSH_ENCRYPTION_KEY \
+  amwanzamwz/monipx:latest
+
+# Or use a specific version
+docker run -d \
   --name monipx \
-  mwzconnect/monipx:latest
+  --restart=unless-stopped \
+  -p 3001:3001 \
+  -v monipx-data:/app/data \
+  -v monipx-logs:/app/logs \
+  -e NODE_ENV=production \
+  -e SSH_ENCRYPTION_KEY=$SSH_ENCRYPTION_KEY \
+  amwanzamwz/monipx:v1.1.0
 ```
+
+**Available on Docker Hub**: [`amwanzamwz/monipx`](https://hub.docker.com/r/amwanzamwz/monipx)
 
 ### Non-Docker Installation
 
@@ -276,21 +304,25 @@ The specification includes:
 - [x] Auto-reconnect and keep-alive
 - [x] Beautiful modern UI for terminal
 - [x] Search functionality for sessions
+- [x] HTTP/HTTPS monitoring
+- [x] TCP monitoring
+- [x] DNS monitoring
+- [x] WebSocket monitoring
+- [x] Charts and graphs for monitoring
+- [x] Monitor groups and organization
 
 ### 🔄 Version 1.2 (Planned)
-- [ ] HTTP/HTTPS monitoring
-- [ ] TCP monitoring
-- [ ] DNS monitoring
-- [ ] WebSocket monitoring
-- [ ] Notification system (email, webhook)
-- [ ] Charts and graphs
-- [ ] Export functionality (CSV, JSON)
+- [ ] Notification system (email, webhook, Slack, Discord)
+- [ ] Export functionality (CSV, JSON, PDF)
+- [ ] Advanced alerting rules
+- [ ] Status pages
+- [ ] Multi-user support with roles
+- [ ] API authentication with tokens
 
 ### 🚀 Future Versions
 - [ ] Multi-user support with roles
 - [ ] API authentication
 - [ ] Plugin system
-- [ ] Mobile app
 - [ ] Advanced reporting
 
 See [TASKS_V1.md](./TASKS_V1.md) for detailed task breakdown.
