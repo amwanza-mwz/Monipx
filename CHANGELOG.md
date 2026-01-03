@@ -74,6 +74,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `qrcode` for 2FA QR code generation
 - Updated all dependencies to latest stable versions
 
+### 🐳 Docker & Deployment
+- **GitHub Container Registry**: Automatic builds and publishing
+- **Multi-architecture Support**: amd64 and arm64
+- **Automated CI/CD**: GitHub Actions workflow for Docker builds
+- **Pre-built Images**: Available at `ghcr.io/amwanza-mwz/monipx`
+- **Version Tags**: Both `latest` and semantic versioning (e.g., `v1.1.0`)
+- **One-command Deployment**: `docker run -d -p 3001:3001 ghcr.io/amwanza-mwz/monipx:latest`
+
 ### 🚀 Performance
 - Optimized database queries with indexes
 - Improved WebSocket connection handling
