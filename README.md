@@ -150,13 +150,24 @@ On first launch, you'll be prompted to create an admin account.
 
 **⚠️ IMPORTANT**: For production deployments, you **MUST** set a secure `SSH_ENCRYPTION_KEY` environment variable. This key is used to encrypt SSH private keys stored in the database. Without it, a default insecure key will be used.
 
-### Docker Run (Recommended - Pull from GitHub Container Registry)
+### Docker Run (Recommended)
 
 ```bash
 # Generate a secure encryption key first
 export SSH_ENCRYPTION_KEY=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
 
-# Run Monipx container from GitHub Container Registry
+# Option 1: Pull from Docker Hub (Recommended for most users)
+docker run -d \
+  --name monipx \
+  --restart=unless-stopped \
+  -p 3001:3001 \
+  -v monipx-data:/app/data \
+  -v monipx-logs:/app/logs \
+  -e NODE_ENV=production \
+  -e SSH_ENCRYPTION_KEY=$SSH_ENCRYPTION_KEY \
+  amwanzamwz/monipx:latest
+
+# Option 2: Pull from GitHub Container Registry
 docker run -d \
   --name monipx \
   --restart=unless-stopped \
@@ -176,16 +187,18 @@ docker run -d \
   -v monipx-logs:/app/logs \
   -e NODE_ENV=production \
   -e SSH_ENCRYPTION_KEY=$SSH_ENCRYPTION_KEY \
-  ghcr.io/amwanza-mwz/monipx:v1.1.0
+  amwanzamwz/monipx:v1.1.0
 ```
 
-**Available on GitHub Container Registry**: [`ghcr.io/amwanza-mwz/monipx`](https://github.com/amwanza-mwz/Monipx/pkgs/container/monipx)
+**Available on Multiple Registries:**
+- 🐳 **Docker Hub**: [`amwanzamwz/monipx`](https://hub.docker.com/r/amwanzamwz/monipx)
+- 📦 **GitHub Container Registry**: [`ghcr.io/amwanza-mwz/monipx`](https://github.com/amwanza-mwz/Monipx/pkgs/container/monipx)
 
-**Why GitHub Container Registry?**
-- ✅ Free and unlimited for public repositories
-- ✅ No rate limits
-- ✅ Automatic builds with GitHub Actions
+**Features:**
 - ✅ Multi-architecture support (amd64, arm64)
+- ✅ Automatic builds with GitHub Actions
+- ✅ Published to both Docker Hub and GHCR
+- ✅ Semantic versioning (latest, v1.1.0, 1.1, 1)
 
 ### Non-Docker Installation
 
