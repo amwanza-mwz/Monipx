@@ -6,16 +6,30 @@ on:
       - main
     tags:
       - 'v*.*.*'
+    paths:
+      - 'client/**'
+      - 'server/**'
+      - 'Dockerfile'
+      - 'package*.json'
+      - 'docker-compose.yml'
+      - '.github/workflows/docker-publish.yml'
   pull_request:
     branches:
       - main
+    paths:
+      - 'client/**'
+      - 'server/**'
+      - 'Dockerfile'
+      - 'package*.json'
+      - 'docker-compose.yml'
+      - '.github/workflows/docker-publish.yml'
   workflow_dispatch:
 
 env:
   GHCR_REGISTRY: ghcr.io
   DOCKERHUB_REGISTRY: docker.io
   IMAGE_NAME: ${{ github.repository }}
-  DOCKERHUB_IMAGE: amwanzamwz/monipx
+  DOCKERHUB_IMAGE: mwanzaa12/monipx
 
 jobs:
   build-and-push:
