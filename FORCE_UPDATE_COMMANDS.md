@@ -18,24 +18,24 @@ This update fixes critical bugs:
 **Copy and paste these commands on your production server:**
 
 ```bash
-# Step 1: Backup your database (IMPORTANT!)
+# Step 1: View your encryption key (verify you have it)
+cat ~/.monipx_env
+
+# Step 2: Backup your database (IMPORTANT!)
 mkdir -p ~/monipx-backups
 docker cp monipx:/app/data/monipx.db ~/monipx-backups/monipx-backup-$(date +%Y%m%d-%H%M%S).db
 
-# Step 2: Stop and remove old container
+# Step 3: Stop and remove old container
 docker stop monipx
 docker rm monipx
 
-# Step 3: Remove old images to force fresh pull
+# Step 4: Remove old images to force fresh pull
 docker images | grep monipx | awk '{print $3}' | xargs docker rmi -f
 
-# Step 4: Pull latest version (v1.1.7)
+# Step 5: Pull latest version (v1.1.7)
 docker pull mwanzaa12/monipx:latest
 
-# Step 5: Start new container with your existing data
-# Make sure you have your SSH_ENCRYPTION_KEY ready!
-# If you saved it in ~/.monipx_env, use it:
-
+# Step 6: Start new container with your existing data
 docker run -d \
   --name monipx \
   --restart unless-stopped \
@@ -46,7 +46,7 @@ docker run -d \
   -e SSH_ENCRYPTION_KEY="$(cat ~/.monipx_env | cut -d'=' -f2)" \
   mwanzaa12/monipx:latest
 
-# Step 6: Verify it's running
+# Step 7: Verify it's running
 docker ps | grep monipx
 docker logs --tail 30 monipx
 ```
@@ -60,6 +60,10 @@ docker logs --tail 30 monipx
 **WARNING:** Only use if you're confident and have your encryption key ready!
 
 ```bash
+# View your key first
+cat ~/.monipx_env
+
+# Then run this one-liner
 docker cp monipx:/app/data/monipx.db ~/monipx-backup-$(date +%Y%m%d-%H%M%S).db && \
 docker stop monipx && docker rm monipx && \
 docker rmi -f $(docker images | grep monipx | awk '{print $3}') && \

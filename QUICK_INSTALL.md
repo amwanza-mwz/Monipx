@@ -76,7 +76,12 @@ docker run -d \
    echo "SSH_ENCRYPTION_KEY=$SSH_ENCRYPTION_KEY" > ~/.monipx_env
    ```
 
-2. **Start container:**
+2. **View your encryption key (verify it exists):**
+   ```bash
+   cat ~/.monipx_env
+   ```
+
+3. **Start container:**
    ```bash
    docker run -d \
      --name monipx \
@@ -89,7 +94,7 @@ docker run -d \
      mwanzaa12/monipx:latest
    ```
 
-3. **Access UI:**
+4. **Access UI:**
    - Open: http://localhost:3001
    - Create your first SSH session
    - Start monitoring!
@@ -105,14 +110,17 @@ docker stop monipx && docker rm monipx && docker pull mwanzaa12/monipx:latest &&
 
 ### Step-by-Step Update
 ```bash
-# Pull latest
+# 1. View your encryption key (make sure you have it)
+cat ~/.monipx_env
+
+# 2. Pull latest
 docker pull mwanzaa12/monipx:latest
 
-# Stop and remove old container
+# 3. Stop and remove old container
 docker stop monipx
 docker rm monipx
 
-# Start new container (data persists in volumes)
+# 4. Start new container (data persists in volumes)
 docker run -d \
   --name monipx \
   --restart unless-stopped \
