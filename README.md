@@ -29,7 +29,9 @@ docker run -d --name monipx --restart=unless-stopped \
   mwanzaa12/monipx:latest
 ```
 
-**Access:** http://localhost:3000
+**Access:** http://YOUR_SERVER_IP:3001
+
+**Example:** `http://192.168.1.100:3001`
 
 **Platforms:** linux/amd64, linux/arm64 (Mac M1/M2, Raspberry Pi)
 
@@ -226,7 +228,9 @@ docker-compose up -d --build
 docker-compose logs -f
 ```
 
-Access Monipx at `http://localhost:3000`
+**Access:** `http://YOUR_SERVER_IP:3001`
+
+**Example:** `http://192.168.1.100:3001`
 
 **⚠️ IMPORTANT**: The `SSH_ENCRYPTION_KEY` encrypts SSH credentials in the database. Keep it safe!
 
@@ -296,8 +300,8 @@ docker logs -f monipx
 ```
 
 **Access your server:**
-- Web Interface: `http://YOUR_SERVER_IP:3000`
-- WebSocket: `ws://YOUR_SERVER_IP:3001`
+- Web Interface: `http://YOUR_SERVER_IP:3001`
+- Example: `http://192.168.1.100:3001`
 
 #### Option 2: Deploy with Docker Compose (Production)
 

@@ -20,7 +20,9 @@ docker run -d \
 ```
 
 ### Access
-Open: **http://localhost:3001**
+Open: **http://YOUR_SERVER_IP:3001**
+
+Example: `http://192.168.1.100:3001`
 
 ---
 
@@ -95,7 +97,8 @@ docker run -d \
    ```
 
 4. **Access UI:**
-   - Open: http://localhost:3001
+   - Open: **http://YOUR_SERVER_IP:3001**
+   - Example: `http://192.168.1.100:3001`
    - Create your first SSH session
    - Start monitoring!
 
