@@ -78,8 +78,6 @@ docker run -d \
 
 2. **Start container:**
    ```bash
-   source ~/.monipx_env
-   
    docker run -d \
      --name monipx \
      --restart unless-stopped \
@@ -87,7 +85,7 @@ docker run -d \
      -v monipx-data:/app/data \
      -v monipx-logs:/app/logs \
      -e NODE_ENV=production \
-     -e SSH_ENCRYPTION_KEY="$SSH_ENCRYPTION_KEY" \
+     -e SSH_ENCRYPTION_KEY="$(cat ~/.monipx_env | cut -d'=' -f2)" \
      mwanzaa12/monipx:latest
    ```
 
@@ -115,8 +113,6 @@ docker stop monipx
 docker rm monipx
 
 # Start new container (data persists in volumes)
-source ~/.monipx_env
-
 docker run -d \
   --name monipx \
   --restart unless-stopped \
@@ -124,7 +120,7 @@ docker run -d \
   -v monipx-data:/app/data \
   -v monipx-logs:/app/logs \
   -e NODE_ENV=production \
-  -e SSH_ENCRYPTION_KEY="$SSH_ENCRYPTION_KEY" \
+  -e SSH_ENCRYPTION_KEY="$(cat ~/.monipx_env | cut -d'=' -f2)" \
   mwanzaa12/monipx:latest
 ```
 

@@ -34,8 +34,7 @@ docker pull mwanzaa12/monipx:latest
 
 # Step 5: Start new container with your existing data
 # Make sure you have your SSH_ENCRYPTION_KEY ready!
-# If you saved it in ~/.monipx_env, load it first:
-source ~/.monipx_env
+# If you saved it in ~/.monipx_env, use it:
 
 docker run -d \
   --name monipx \
@@ -44,7 +43,7 @@ docker run -d \
   -v monipx-data:/app/data \
   -v monipx-logs:/app/logs \
   -e NODE_ENV=production \
-  -e SSH_ENCRYPTION_KEY="$SSH_ENCRYPTION_KEY" \
+  -e SSH_ENCRYPTION_KEY="$(cat ~/.monipx_env | cut -d'=' -f2)" \
   mwanzaa12/monipx:latest
 
 # Step 6: Verify it's running
@@ -65,13 +64,12 @@ docker cp monipx:/app/data/monipx.db ~/monipx-backup-$(date +%Y%m%d-%H%M%S).db &
 docker stop monipx && docker rm monipx && \
 docker rmi -f $(docker images | grep monipx | awk '{print $3}') && \
 docker pull mwanzaa12/monipx:latest && \
-source ~/.monipx_env && \
 docker run -d --name monipx --restart unless-stopped \
   -p 3001:3001 \
   -v monipx-data:/app/data \
   -v monipx-logs:/app/logs \
   -e NODE_ENV=production \
-  -e SSH_ENCRYPTION_KEY="$SSH_ENCRYPTION_KEY" \
+  -e SSH_ENCRYPTION_KEY="$(cat ~/.monipx_env | cut -d'=' -f2)" \
   mwanzaa12/monipx:latest && \
 docker logs --tail 30 monipx
 ```

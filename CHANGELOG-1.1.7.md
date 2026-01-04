@@ -110,8 +110,8 @@ docker pull ghcr.io/amwanza-mwz/monipx:latest
 
 ### Update Command
 ```bash
-# Load your encryption key
-source ~/.monipx_env
+# Backup your database
+docker cp monipx:/app/data/monipx.db ~/monipx-backups/monipx-backup-$(date +%Y%m%d).db
 
 # Stop and remove old container
 docker stop monipx && docker rm monipx
@@ -125,7 +125,7 @@ docker run -d --name monipx --restart unless-stopped \
   -v monipx-data:/app/data \
   -v monipx-logs:/app/logs \
   -e NODE_ENV=production \
-  -e SSH_ENCRYPTION_KEY="$SSH_ENCRYPTION_KEY" \
+  -e SSH_ENCRYPTION_KEY="$(cat ~/.monipx_env | cut -d'=' -f2)" \
   mwanzaa12/monipx:latest
 ```
 
