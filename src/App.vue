@@ -39,13 +39,14 @@ export default {
     // Provide sidebar state to all child components
     provide('sidebarCollapsed', sidebarCollapsed);
 
-    // Hide layout on login and setup pages
+    // Hide layout on login, setup, and terminal pages
     const showLayout = computed(() => {
       const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
       const isAuthPage = route.path === '/login' || route.path === '/setup';
+      const isTerminalPage = route.path === '/secure-terminal';
 
-      // Never show layout on auth pages
-      if (isAuthPage) {
+      // Never show layout on auth pages or terminal page
+      if (isAuthPage || isTerminalPage) {
         return false;
       }
 

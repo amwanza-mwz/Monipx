@@ -1,256 +1,167 @@
-# ⚡ Monipx Quick Installation Guide
+# 🚀 Quick Install Guide
 
-**Get Monipx running on Ubuntu in 2 minutes!**
+**Current Version:** v1.1.7
+
+## Docker Hub (Recommended)
+
+### Pull and Run
+```bash
+docker pull mwanzaa12/monipx:latest
+
+docker run -d \
+  --name monipx \
+  --restart unless-stopped \
+  -p 3001:3001 \
+  -v monipx-data:/app/data \
+  -v monipx-logs:/app/logs \
+  -e NODE_ENV=production \
+  -e SSH_ENCRYPTION_KEY=$(openssl rand -base64 32) \
+  mwanzaa12/monipx:latest
+```
+
+### Access
+Open: **http://localhost:3001**
 
 ---
 
-## 🚀 Step 1: Generate Encryption Key
-
-**Copy and paste BOTH lines at once into your Ubuntu terminal:**
-
-```bash
-export SSH_ENCRYPTION_KEY=$(openssl rand -base64 32)
-echo "SSH_ENCRYPTION_KEY=$SSH_ENCRYPTION_KEY" > ~/.monipx_env
-```
-
-**Press Enter.** *(You won't see any output - that's normal!)*
-
----
-
-### ✅ Verify the Key Was Created
-
-```bash
-cat ~/.monipx_env
-```
-
-**You should see something like:**
-```
-SSH_ENCRYPTION_KEY=Kx7aP9vQ2wR5tY8uI1oP3aS6dF9gI2jK4lZ7xC0sB5n=
-```
-
-**⚠️ IMPORTANT:** This key encrypts your SSH credentials. Keep it safe!
-
----
-
-## 🐳 Step 2: Pull the Docker Image
-
-**Choose ONE option:**
-
-### Option A: From Docker Hub (Recommended)
-
-```bash
-docker pull mwanzaa12/monipx:v1.1.1
-```
-
-### Option B: From GitHub Container Registry
+## GitHub Container Registry
 
 ```bash
 docker pull ghcr.io/amwanza-mwz/monipx:latest
-```
 
----
-
-## 🚀 Step 3: Start Monipx
-
-**Choose the SAME option you used in Step 2:**
-
-### Option A: Using Docker Hub Image
-
-```bash
 docker run -d \
   --name monipx \
-  --restart=unless-stopped \
-  -p 3000:3000 \
+  --restart unless-stopped \
   -p 3001:3001 \
   -v monipx-data:/app/data \
   -v monipx-logs:/app/logs \
   -e NODE_ENV=production \
-  -e "SSH_ENCRYPTION_KEY=$(cat ~/.monipx_env | cut -d'=' -f2)" \
-  mwanzaa12/monipx:v1.1.1
-```
-
-### Option B: Using GitHub Container Registry Image
-
-```bash
-docker run -d \
-  --name monipx \
-  --restart=unless-stopped \
-  -p 3000:3000 \
-  -p 3001:3001 \
-  -v monipx-data:/app/data \
-  -v monipx-logs:/app/logs \
-  -e NODE_ENV=production \
-  -e "SSH_ENCRYPTION_KEY=$(cat ~/.monipx_env | cut -d'=' -f2)" \
+  -e SSH_ENCRYPTION_KEY=$(openssl rand -base64 32) \
   ghcr.io/amwanza-mwz/monipx:latest
 ```
 
 ---
 
-## ✅ Step 4: Verify It's Running
+## Environment Variables
 
-```bash
-docker ps | grep monipx
-```
-
-**You should see:**
-```
-CONTAINER ID   IMAGE                              STATUS          PORTS
-abc123def456   mwanzaa12/monipx:v1.1.1           Up 10 seconds   0.0.0.0:3000->3000/tcp, 0.0.0.0:3001->3001/tcp
-```
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `NODE_ENV` | Yes | Set to `production` |
+| `SSH_ENCRYPTION_KEY` | Yes | 32-byte base64 key for SSH credential encryption |
 
 ---
 
-## 🌐 Step 5: Access Monipx
+## Volumes
 
-**Open your web browser and go to:**
-
-```
-http://YOUR_SERVER_IP:3000
-```
-
-**Example:**
-```
-http://10.201.30.23:3000
-```
-
-**✅ You should see the Monipx login page!**
+| Volume | Purpose |
+|--------|---------|
+| `monipx-data` | SQLite database and persistent data |
+| `monipx-logs` | Application logs |
 
 ---
 
-## 🔍 Troubleshooting
+## Ports
 
-### Can't Access the Web Interface?
+| Port | Description |
+|------|-------------|
+| `3001` | Web UI and API |
 
-**Check if the container is running:**
+---
+
+## First Time Setup
+
+1. **Generate encryption key:**
+   ```bash
+   export SSH_ENCRYPTION_KEY=$(openssl rand -base64 32)
+   echo "SSH_ENCRYPTION_KEY=$SSH_ENCRYPTION_KEY" > ~/.monipx_env
+   ```
+
+2. **Start container:**
+   ```bash
+   source ~/.monipx_env
+   
+   docker run -d \
+     --name monipx \
+     --restart unless-stopped \
+     -p 3001:3001 \
+     -v monipx-data:/app/data \
+     -v monipx-logs:/app/logs \
+     -e NODE_ENV=production \
+     -e SSH_ENCRYPTION_KEY="$SSH_ENCRYPTION_KEY" \
+     mwanzaa12/monipx:latest
+   ```
+
+3. **Access UI:**
+   - Open: http://localhost:3001
+   - Create your first SSH session
+   - Start monitoring!
+
+---
+
+## Update to Latest Version
+
+### Quick Update (One Command)
 ```bash
-docker ps | grep monipx
+docker stop monipx && docker rm monipx && docker pull mwanzaa12/monipx:latest && docker run -d --name monipx --restart unless-stopped -p 3001:3001 -v monipx-data:/app/data -v monipx-logs:/app/logs -e NODE_ENV=production -e SSH_ENCRYPTION_KEY="$(cat ~/.monipx_env | cut -d'=' -f2)" mwanzaa12/monipx:latest
 ```
 
-**Check the logs:**
+### Step-by-Step Update
 ```bash
-docker logs monipx
-```
+# Pull latest
+docker pull mwanzaa12/monipx:latest
 
-**Check firewall:**
-```bash
-sudo ufw allow 3000/tcp
-sudo ufw allow 3001/tcp
-sudo ufw reload
-```
-
-### Container Won't Start?
-
-**View error logs:**
-```bash
-docker logs monipx
-```
-
-**Common issue: Encryption key not set**
-```bash
-# Verify key exists
-cat ~/.monipx_env
-
-# If empty, regenerate:
-export SSH_ENCRYPTION_KEY=$(openssl rand -base64 32)
-echo "SSH_ENCRYPTION_KEY=$SSH_ENCRYPTION_KEY" > ~/.monipx_env
-
-# Restart container
+# Stop and remove old container
 docker stop monipx
 docker rm monipx
-# Then run the docker run command again
+
+# Start new container (data persists in volumes)
+source ~/.monipx_env
+
+docker run -d \
+  --name monipx \
+  --restart unless-stopped \
+  -p 3001:3001 \
+  -v monipx-data:/app/data \
+  -v monipx-logs:/app/logs \
+  -e NODE_ENV=production \
+  -e SSH_ENCRYPTION_KEY="$SSH_ENCRYPTION_KEY" \
+  mwanzaa12/monipx:latest
 ```
 
-### SSL Error (SSL_ERROR_RX_RECORD_TOO_LONG)?
-
-**Use HTTP, not HTTPS:**
-```
-✅ Correct: http://10.201.30.23:3000
-❌ Wrong:  https://10.201.30.23:3000
-```
-
-For HTTPS, see: [MY_DEPLOYMENT_GUIDE.md](MY_DEPLOYMENT_GUIDE.md#ssltls-setup-with-nginx)
+✅ **Data is preserved** - All your monitors, SSH sessions, and settings remain intact!
 
 ---
 
-## 🛠️ Useful Commands
+## Troubleshooting
 
-### View Logs
+### Container won't start
 ```bash
-docker logs -f monipx
+docker logs monipx
 ```
 
-### Restart Container
+### Check encryption key
 ```bash
-docker restart monipx
+docker exec monipx printenv SSH_ENCRYPTION_KEY
 ```
 
-### Stop Container
+### Reset database (⚠️ deletes all data)
 ```bash
 docker stop monipx
-```
-
-### Start Container
-```bash
+docker volume rm monipx-data
 docker start monipx
 ```
 
-### Remove Container
-```bash
-docker stop monipx
-docker rm monipx
-```
+---
 
-### View Encryption Key
-```bash
-cat ~/.monipx_env
-```
+## Support
+
+- **Issues:** https://github.com/arnoldmwz/monipx/issues
+- **Docs:** https://github.com/arnoldmwz/monipx
+- **Docker Hub:** https://hub.docker.com/r/mwanzaa12/monipx
 
 ---
 
-## 📚 Next Steps
-
-1. **Create your admin account** at `http://YOUR_SERVER_IP:3000`
-2. **Add servers to monitor** in the web interface
-3. **Set up SSL/TLS** for secure HTTPS access (optional)
-   - See: [MY_DEPLOYMENT_GUIDE.md](MY_DEPLOYMENT_GUIDE.md#ssltls-setup-with-nginx)
-4. **Configure backups** of your encryption key and data
-
----
-
-## 🔐 Security Notes
-
-**Your encryption key is stored in:** `~/.monipx_env`
-
-**⚠️ CRITICAL:**
-- Keep this file safe
-- Backup to a secure location
-- Never commit to version control
-- Losing this key means losing access to encrypted SSH credentials
-
-**Backup your key:**
-```bash
-cp ~/.monipx_env ~/monipx_key_backup_$(date +%Y%m%d).txt
-```
-
----
-
-## 📖 Full Documentation
-
-For complete documentation, see:
-- **Quick Start:** [QUICK_START.md](QUICK_START.md)
-- **Production Deployment:** [MY_DEPLOYMENT_GUIDE.md](MY_DEPLOYMENT_GUIDE.md)
-- **Complete Reference:** [KNOWLEDGE_BASE.md](KNOWLEDGE_BASE.md)
-- **Start Here:** [00_START_HERE.md](00_START_HERE.md)
-
----
-
-**🎉 That's it! You're running Monipx!**
-
-**Access:** `http://YOUR_SERVER_IP:3000`
-
----
-
-**Last Updated:** 2024-01-15  
-**Version:** 1.1.1  
-**Status:** ✅ Production Ready
+**Version:** 1.1.7  
+**Last Updated:** 2026-01-04
+**Release Notes:** [v1.1.7](https://github.com/amwanza-mwz/Monipx/releases/tag/v1.1.7)
 

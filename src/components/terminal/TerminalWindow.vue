@@ -83,6 +83,9 @@ export default {
         // Only process data for this specific session
         if (payload.sessionId === sessionId && terminal) {
           terminal.write(payload.data);
+        } else if (payload.sessionId !== sessionId) {
+          // Log when data is received for a different session (helps debug isolation)
+          console.log(`[Terminal ${sessionId}] Ignoring data for session ${payload.sessionId}`);
         }
       };
 
@@ -122,6 +125,9 @@ export default {
         console.log('🔄 TerminalWindow: Tab ID:', props.tabId);
         console.log('🔄 TerminalWindow: Terminal container:', terminalContainer.value);
 
+        // Generate unique session ID FIRST (before setting up handlers)
+        sessionId = props.tabId;
+
         // Initialize terminal if not already done
         if (!terminal) {
           console.log('🔄 TerminalWindow: Creating new Terminal instance');
@@ -141,14 +147,26 @@ export default {
 
           console.log('✅ TerminalWindow: Terminal initialized successfully');
 
-          // Setup event handlers only once
+          // Setup event handlers only once (AFTER sessionId is set)
           setupEventHandlers();
         }
 
-        terminal.writeln('\x1b[33mConnecting to ' + props.session.host + '...\x1b[0m');
+        // DEBUG: Log session details before connecting
+        console.log('\n' + '='.repeat(80));
+        console.log('🖥️  [TerminalWindow] CONNECTING TO SSH SESSION');
+        console.log('='.repeat(80));
+        console.log('Props.session:', {
+          id: props.session.id,
+          name: props.session.name,
+          host: props.session.host,
+          port: props.session.port,
+          username: props.session.username,
+        });
+        console.log('Props.tabId:', props.tabId);
+        console.log('SessionId for filtering:', sessionId);
+        console.log('='.repeat(80) + '\n');
 
-        // Generate unique session ID
-        sessionId = props.tabId;
+        terminal.writeln('\x1b[33mConnecting to ' + props.session.host + '...\x1b[0m');
 
         // Prepare connection options
         connectionOptions = {
@@ -157,8 +175,15 @@ export default {
           cols: terminal.cols,
         };
 
+        console.log('🔄 [TerminalWindow] Calling terminalSocket.connect()');
+        console.log('   Tab/Session ID:', sessionId);
+        console.log('   SSH Session ID:', props.session.id, '(type:', typeof props.session.id + ')');
+        console.log('   Options:', connectionOptions);
+
         // Connect via Socket.IO
         await terminalSocket.connect(sessionId, props.session.id, connectionOptions);
+
+        console.log('✅ [TerminalWindow] terminalSocket.connect() completed');
 
         status.value = 'connected';
         emit('status-change', { tabId: props.tabId, status: 'connected' });

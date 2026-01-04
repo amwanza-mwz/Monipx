@@ -18,17 +18,48 @@ class SSHManager {
    */
   async connect(sessionId, passphrase = null) {
     try {
-      console.log(`🔍 SSHManager.connect called with sessionId: ${sessionId} (type: ${typeof sessionId})`);
+      console.log(`\n${'═'.repeat(80)}`);
+      console.log(`🔌 SSHManager.connect()`);
+      console.log(`${'═'.repeat(80)}`);
+      console.log(`   Input sessionId: ${sessionId} (type: ${typeof sessionId})`);
 
-      // Get session details
-      const session = await SSHSession.getById(sessionId);
-      console.log(`🔍 Session lookup result:`, session ? `Found: ${session.name}` : 'NOT FOUND');
-
-      if (!session) {
-        throw new Error(`SSH session not found (ID: ${sessionId})`);
+      // Ensure sessionId is a number (fix for production string/number mismatch)
+      const numericSessionId = parseInt(sessionId, 10);
+      if (isNaN(numericSessionId)) {
+        throw new Error(`Invalid session ID: ${sessionId}`);
       }
 
-      console.log(`🔌 Connecting to ${session.username}@${session.host}:${session.port}...`);
+      console.log(`   Numeric sessionId: ${numericSessionId}`);
+      console.log(`${'═'.repeat(80)}\n`);
+
+      // Get session details with decrypted password if using password auth
+      console.log(`🔍 Looking up SSH session in database...`);
+      const session = await SSHSession.getForConnection(numericSessionId);
+
+      if (!session) {
+        // Additional debugging - check if session exists at all
+        const allSessions = await SSHSession.getAll();
+        console.error(`\n${'!'.repeat(80)}`);
+        console.error(`❌ SSH SESSION NOT FOUND`);
+        console.error(`${'!'.repeat(80)}`);
+        console.error(`   Requested ID: ${numericSessionId}`);
+        console.error(`   Total sessions in database: ${allSessions.length}`);
+        console.error(`   Available session IDs: ${allSessions.map(s => s.id).join(', ')}`);
+        console.error(`   Available sessions:`);
+        allSessions.forEach(s => {
+          console.error(`      - ID ${s.id}: ${s.name} @ ${s.host}`);
+        });
+        console.error(`${'!'.repeat(80)}\n`);
+        throw new Error(`SSH session not found (ID: ${numericSessionId})`);
+      }
+
+      console.log(`✅ Session found in database:`);
+      console.log(`   ID: ${session.id}`);
+      console.log(`   Name: ${session.name}`);
+      console.log(`   Host: ${session.host}:${session.port}`);
+      console.log(`   Username: ${session.username}`);
+      console.log(`   Auth Method: ${session.auth_method}`);
+      console.log(`\n🔌 Connecting to ${session.username}@${session.host}:${session.port}...`);
 
       // Get SSH key if using key authentication
       let privateKey = null;
@@ -83,8 +114,8 @@ class SSHManager {
       const client = new Client();
       const connectionId = this.generateConnectionId();
 
-      // Create connection log
-      const log = await SSHConnectionLog.create({ session_id: sessionId });
+      // Create connection log (use numericSessionId to ensure correct type)
+      const log = await SSHConnectionLog.create({ session_id: numericSessionId });
 
       // Connection configuration with legacy algorithms for Cisco devices
       const config = {
@@ -160,16 +191,13 @@ class SSHManager {
       } else if (session.auth_method === 'password') {
         console.log('🔐 Using password authentication');
 
-        // Decrypt password from database
-        if (!session.password) {
+        // Password should already be decrypted by getForConnection()
+        if (!session.decrypted_password) {
           throw new Error('Password not found for this session');
         }
 
-        const KeyEncryption = require('./KeyEncryption');
-        const decryptedPassword = KeyEncryption.decrypt(session.password);
-        config.password = decryptedPassword;
-
-        console.log('✅ Password decrypted and ready for connection');
+        config.password = session.decrypted_password;
+        console.log('✅ Password ready for connection');
       } else {
         throw new Error('No authentication method configured');
       }

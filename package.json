@@ -1,6 +1,6 @@
 {
   "name": "monipx",
-  "version": "1.1.0",
+  "version": "1.1.7",
   "description": "A self-hosted IP address inventory and network monitoring tool",
   "main": "server/server.js",
   "scripts": {

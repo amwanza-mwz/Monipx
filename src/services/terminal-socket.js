@@ -16,7 +16,8 @@ class TerminalSocket {
       return;
     }
 
-    const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    // Use relative URL in production, absolute URL in development
+    const socketUrl = import.meta.env.VITE_API_URL || window.location.origin;
     console.log('🔌 Initializing Terminal WebSocket:', `${socketUrl}/terminal`);
 
     this.socket = io(`${socketUrl}/terminal`, {
@@ -72,7 +73,14 @@ class TerminalSocket {
    * @param {object} options - Terminal options
    */
   async connect(sessionId, sshSessionId, options = {}) {
-    console.log('🔄 Connecting to terminal session:', { sessionId, sshSessionId, options });
+    console.log('\n' + '─'.repeat(80));
+    console.log('📡 [TerminalSocket] connect()');
+    console.log('─'.repeat(80));
+    console.log('   Tab/Session ID:', sessionId);
+    console.log('   SSH Session ID:', sshSessionId, '(type:', typeof sshSessionId + ')');
+    console.log('   Options:', options);
+    console.log('─'.repeat(80) + '\n');
+
     this.init();
 
     if (!this.socket.connected) {
@@ -105,7 +113,11 @@ class TerminalSocket {
       };
 
       const onError = (error) => {
-        console.error('📨 Received terminal:error event:', error);
+        console.error('\n' + '!'.repeat(80));
+        console.error('❌ [TerminalSocket] Received terminal:error event');
+        console.error('!'.repeat(80));
+        console.error('Error:', error);
+        console.error('!'.repeat(80) + '\n');
         clearTimeout(timeout);
         this.off('connected', onConnected);
         this.off('error', onError);
@@ -115,7 +127,8 @@ class TerminalSocket {
       this.on('connected', onConnected);
       this.on('error', onError);
 
-      console.log('📤 Emitting terminal:connect event...');
+      console.log('📤 [TerminalSocket] Emitting terminal:connect event');
+      console.log('   Payload:', { sessionId, sshSessionId, options });
       this.socket.emit('terminal:connect', {
         sessionId,
         sshSessionId,

@@ -30,6 +30,10 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
+        // Add hash to filenames for cache busting
+        entryFileNames: 'assets/[name].[hash].js',
+        chunkFileNames: 'assets/[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash].[ext]',
         manualChunks: {
           'vue-vendor': ['vue', 'vue-router', 'pinia'],
           'chart-vendor': ['chart.js', 'vue-chartjs'],

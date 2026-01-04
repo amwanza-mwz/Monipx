@@ -18,10 +18,18 @@ class TerminalWebSocket {
         try {
           const { sessionId, sshSessionId, options } = data;
 
-          console.log(`📺 Terminal connect request received`);
-          console.log(`   Session ID: ${sessionId}`);
-          console.log(`   SSH Session ID: ${sshSessionId}`);
+          console.log(`\n${'='.repeat(80)}`);
+          console.log(`📺 TERMINAL CONNECT REQUEST RECEIVED`);
+          console.log(`${'='.repeat(80)}`);
+          console.log(`   Tab/Session ID: ${sessionId}`);
+          console.log(`   SSH Session ID: ${sshSessionId} (type: ${typeof sshSessionId})`);
           console.log(`   Options:`, JSON.stringify(options, null, 2));
+          console.log(`${'='.repeat(80)}\n`);
+
+          // Validate sshSessionId
+          if (!sshSessionId) {
+            throw new Error('SSH Session ID is required');
+          }
 
           // Create terminal session
           console.log(`🔄 Creating terminal session...`);
@@ -41,10 +49,14 @@ class TerminalWebSocket {
             success: true,
           });
 
-          console.log(`✅ Terminal connected event sent to client: ${sessionId}`);
+          console.log(`✅ Terminal connected event sent to client: ${sessionId}\n`);
         } catch (error) {
-          console.error(`❌ Terminal connection failed:`, error);
-          console.error(`❌ Error stack:`, error.stack);
+          console.error(`\n${'!'.repeat(80)}`);
+          console.error(`❌ TERMINAL CONNECTION FAILED`);
+          console.error(`${'!'.repeat(80)}`);
+          console.error(`Error: ${error.message}`);
+          console.error(`Stack:`, error.stack);
+          console.error(`${'!'.repeat(80)}\n`);
           socket.emit('terminal:error', {
             error: error.message,
           });

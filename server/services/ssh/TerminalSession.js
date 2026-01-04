@@ -15,13 +15,21 @@ class TerminalSession {
    */
   async createSession(sessionId, sshSessionId, socket, options = {}) {
     try {
-      console.log(`📺 Creating terminal session: ${sessionId}`);
+      console.log(`\n${'─'.repeat(80)}`);
+      console.log(`📺 TerminalSession.createSession()`);
+      console.log(`${'─'.repeat(80)}`);
+      console.log(`   Tab/Session ID: ${sessionId}`);
+      console.log(`   SSH Session ID: ${sshSessionId} (type: ${typeof sshSessionId})`);
+      console.log(`   Options:`, options);
+      console.log(`${'─'.repeat(80)}\n`);
 
       // Connect to SSH
+      console.log(`🔄 Calling SSHManager.connect with sshSessionId: ${sshSessionId}`);
       const { connectionId, client } = await SSHManager.connect(
         sshSessionId,
         options.passphrase
       );
+      console.log(`✅ SSHManager.connect returned connectionId: ${connectionId}`);
 
       // Open shell
       const stream = await SSHManager.openShell(connectionId, {
@@ -41,25 +49,37 @@ class TerminalSession {
 
       // Handle stream data (output from SSH server)
       stream.on('data', (data) => {
-        socket.emit('terminal:data', {
-          sessionId,
-          data: data.toString('utf-8')
-        });
+        // CRITICAL: Only emit to THIS specific session's socket
+        // DO NOT broadcast to all sockets!
+        const session = this.sessions.get(sessionId);
+        if (session && session.socket) {
+          session.socket.emit('terminal:data', {
+            sessionId,
+            data: data.toString('utf-8')
+          });
+        }
       });
 
       // Handle stream close
       stream.on('close', () => {
         console.log(`📺 Stream closed for session: ${sessionId}`);
-        socket.emit('terminal:close', { sessionId });
+        const session = this.sessions.get(sessionId);
+        if (session && session.socket) {
+          session.socket.emit('terminal:close', { sessionId });
+        }
         this.closeSession(sessionId);
       });
 
       // Handle stream errors
       stream.stderr.on('data', (data) => {
-        socket.emit('terminal:data', {
-          sessionId,
-          data: data.toString('utf-8')
-        });
+        // CRITICAL: Only emit to THIS specific session's socket
+        const session = this.sessions.get(sessionId);
+        if (session && session.socket) {
+          session.socket.emit('terminal:data', {
+            sessionId,
+            data: data.toString('utf-8')
+          });
+        }
       });
 
       console.log(`✅ Terminal session created: ${sessionId}`);

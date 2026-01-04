@@ -357,12 +357,29 @@ export default {
       emit('new-session-with-group', groupName);
     };
 
+    const deleteSession = async (session) => {
+      if (!confirm(`Are you sure you want to delete "${session.name}"?`)) {
+        return;
+      }
+
+      try {
+        await api.delete(`/ssh-sessions/${session.id}`);
+        await loadSessions();
+        emit('delete', session.id);
+        console.log('✅ Session deleted:', session.id);
+      } catch (error) {
+        console.error('❌ Failed to delete session:', error);
+        alert('Failed to delete session: ' + (error.response?.data?.error || error.message));
+      }
+    };
+
     onMounted(() => loadSessions());
 
     return {
       sessions, loading, searchQuery, filteredGroups, groupList,
       showGroupManager, showKeyManager, newGroupName, toggleGroup, selectSession,
       openGroupManager, closeGroupManager, createGroup, createSessionInGroup, loadSessions,
+      deleteSession,
     };
   },
 };

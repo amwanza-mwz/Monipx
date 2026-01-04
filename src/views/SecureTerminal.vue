@@ -1,6 +1,6 @@
 <template>
-  <div class="secure-terminal">
-    <div class="terminal-sidebar" :class="{ collapsed: sidebarCollapsed }">
+  <div class="secure-terminal" :class="{ 'is-loading': isLoading }">
+    <div class="terminal-sidebar" :class="{ collapsed: sidebarCollapsed }" v-show="!isLoading">
       <SessionList
         :selected-session-id="selectedSession?.id"
         @new-session="showSessionForm = true"
@@ -22,6 +22,10 @@
           <i class="bi bi-terminal"></i>
           <span>Secure Terminal</span>
         </div>
+        <button class="btn-toolbar btn-back" @click="goBackToApp" title="Back to Dashboard">
+          <i class="bi bi-house-door"></i>
+          <span class="back-text">Dashboard</span>
+        </button>
       </div>
 
       <div class="terminal-content">
@@ -54,6 +58,7 @@
 
 <script>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 import SessionList from '@/components/terminal/SessionList.vue';
 import SessionForm from '@/components/terminal/SessionForm.vue';
@@ -71,6 +76,8 @@ export default {
     TerminalWindow,
   },
   setup() {
+    const router = useRouter();
+    const isLoading = ref(true);
     const sidebarCollapsed = ref(false);
     const selectedSession = ref(null);
     const showSessionForm = ref(false);
@@ -84,12 +91,26 @@ export default {
       sidebarCollapsed.value = !sidebarCollapsed.value;
     };
 
+    const goBackToApp = () => {
+      router.push('/');
+    };
+
     const connectToSession = async (session) => {
+      // DEBUG: Log the session being connected to
+      console.log('🔍 [SecureTerminal] connectToSession called with:', {
+        id: session.id,
+        name: session.name,
+        host: session.host,
+        port: session.port,
+        username: session.username,
+      });
+
       // Check if session is already open in a tab
       const existingTab = tabs.value.find(tab => tab.session.id === session.id);
 
       if (existingTab) {
         // Session already open, just switch to that tab
+        console.log('🔍 [SecureTerminal] Session already open, switching to tab:', existingTab.id);
         activeTabId.value = existingTab.id;
         return;
       }
@@ -101,6 +122,12 @@ export default {
         session: session,
         status: 'connecting',
       };
+      console.log('🔍 [SecureTerminal] Creating new tab:', {
+        tabId: sessionId,
+        sessionId: session.id,
+        sessionName: session.name,
+        sessionHost: session.host,
+      });
       tabs.value.push(newTab);
       activeTabId.value = sessionId;
 
@@ -242,6 +269,11 @@ export default {
       } catch (error) {
         console.error('❌ Failed to restore active terminal sessions:', error);
         // Don't block the UI if restore fails
+      } finally {
+        // Hide loading state after restore completes
+        setTimeout(() => {
+          isLoading.value = false;
+        }, 100);
       }
     };
 
@@ -262,6 +294,7 @@ export default {
     // });
 
     return {
+      isLoading,
       sidebarCollapsed,
       selectedSession,
       showSessionForm,
@@ -271,6 +304,7 @@ export default {
       activeTabId,
       sessionListRef,
       toggleSidebar,
+      goBackToApp,
       connectToSession,
       selectTab,
       closeTab,
@@ -289,16 +323,33 @@ export default {
 .secure-terminal {
   display: flex;
   height: 100vh;
+  width: 100vw;
   background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+/* Hide sidebar during initial load to prevent flash */
+.secure-terminal.is-loading .terminal-sidebar {
+  display: none !important;
+  opacity: 0;
+  visibility: hidden;
 }
 
 .terminal-sidebar {
   width: 300px;
   background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
-  transition: width 0.3s ease;
+  transition: width 0.3s ease, opacity 0.2s ease;
   overflow: hidden;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+  opacity: 1;
+  visibility: visible;
 }
 
 .terminal-sidebar.collapsed {
@@ -352,11 +403,33 @@ export default {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex: 1;
 }
 
 .toolbar-title i {
   color: var(--primary);
   font-size: 18px;
+}
+
+.btn-back {
+  margin-left: auto;
+  gap: 0.5rem;
+  padding: 6px 14px;
+}
+
+.back-text {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.btn-back:hover {
+  background: rgba(88, 166, 255, 0.15);
+  border-color: #58a6ff;
+  color: #58a6ff;
+}
+
+.btn-back i {
+  font-size: 16px;
 }
 
 .terminal-content {

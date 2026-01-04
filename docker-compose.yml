@@ -1,7 +1,10 @@
 services:
   monipx:
-    # Use pre-built image from GitHub Container Registry
+    # Use pre-built image from GitHub Container Registry or Docker Hub
+    # GitHub Container Registry (recommended):
     image: ghcr.io/amwanza-mwz/monipx:latest
+    # Docker Hub (alternative):
+    # image: mwanzaa12/monipx:latest
     # Or build locally by uncommenting the line below and commenting the image line above
     # build: .
     container_name: monipx

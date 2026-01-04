@@ -10,11 +10,14 @@ const SSHSession = require('../../models/SSHSession');
 router.get('/', async (req, res) => {
   try {
     const sessions = await ActiveTerminalSession.getAll();
-    
+    console.log(`🔍 [ActiveTerminalSessions] Found ${sessions.length} active sessions`);
+
     // Fetch full SSH session details for each active session
     const sessionsWithDetails = await Promise.all(
       sessions.map(async (activeSession) => {
+        console.log(`🔍 [ActiveTerminalSessions] Loading SSH session ID: ${activeSession.ssh_session_id} (type: ${typeof activeSession.ssh_session_id})`);
         const sshSession = await SSHSession.getById(activeSession.ssh_session_id);
+        console.log(`🔍 [ActiveTerminalSessions] SSH session result:`, sshSession ? `${sshSession.id}: ${sshSession.name} @ ${sshSession.host}` : 'NOT FOUND');
         return {
           id: activeSession.tab_id,
           session: sshSession,
@@ -38,12 +41,21 @@ router.post('/', async (req, res) => {
   try {
     const { tab_id, ssh_session_id, status } = req.body;
 
+    console.log(`🔍 [ActiveTerminalSessions] Creating active session:`, {
+      tab_id,
+      ssh_session_id,
+      ssh_session_id_type: typeof ssh_session_id,
+      status
+    });
+
     if (!tab_id || !ssh_session_id) {
       return res.status(400).json({ error: 'tab_id and ssh_session_id are required' });
     }
 
     // Verify SSH session exists
     const sshSession = await SSHSession.getById(ssh_session_id);
+    console.log(`🔍 [ActiveTerminalSessions] SSH session verification:`, sshSession ? `${sshSession.id}: ${sshSession.name} @ ${sshSession.host}` : 'NOT FOUND');
+
     if (!sshSession) {
       return res.status(404).json({ error: 'SSH session not found' });
     }
@@ -54,6 +66,7 @@ router.post('/', async (req, res) => {
       status: status || 'connecting',
     });
 
+    console.log(`✅ [ActiveTerminalSessions] Active session created for SSH session ${ssh_session_id}`);
     res.status(201).json(activeSession);
   } catch (error) {
     console.error('❌ Failed to create active terminal session:', error);

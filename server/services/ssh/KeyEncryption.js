@@ -55,30 +55,57 @@ class KeyEncryption {
    */
   decrypt(encryptedData) {
     try {
+      if (!encryptedData) {
+        throw new Error('No encrypted data provided');
+      }
+
       // Decode from base64
       const combined = Buffer.from(encryptedData, 'base64');
-      
+
+      // Validate minimum length (IV + authTag + data)
+      if (combined.length < 33) {
+        throw new Error('Invalid encrypted data format (too short)');
+      }
+
       // Extract IV (first 16 bytes)
       const iv = combined.slice(0, 16);
-      
+
       // Extract auth tag (next 16 bytes)
       const authTag = combined.slice(16, 32);
-      
+
       // Extract encrypted data (remaining bytes)
       const encrypted = combined.slice(32);
-      
+
       // Create decipher
       const decipher = crypto.createDecipheriv('aes-256-gcm', this.keyBuffer, iv);
       decipher.setAuthTag(authTag);
-      
+
       // Decrypt
       let decrypted = decipher.update(encrypted, 'binary', 'utf8');
       decrypted += decipher.final('utf8');
-      
+
       return decrypted;
     } catch (error) {
-      console.error('❌ Decryption error:', error);
-      throw new Error('Failed to decrypt SSH key');
+      console.error('❌ Decryption error:', error.message);
+      console.error('   Encrypted data length:', encryptedData ? encryptedData.length : 'null');
+      console.error('   Current encryption key:', this.masterKey ? `Set (${this.masterKey.substring(0, 10)}...)` : 'NOT SET');
+
+      // Provide helpful error messages
+      if (!this.masterKey || this.masterKey === 'default-insecure-key-change-me-in-production-32chars') {
+        throw new Error('SSH_ENCRYPTION_KEY environment variable is not set or using default value. Please set a secure encryption key.');
+      }
+
+      if (error.message.includes('Unsupported state') || error.message.includes('auth') || error.message.includes('bad decrypt')) {
+        throw new Error('Failed to decrypt SSH key. The SSH_ENCRYPTION_KEY used to encrypt this data does not match the current key.\n\n' +
+          'This usually happens when:\n' +
+          '1. The encryption key was changed after the SSH key was saved\n' +
+          '2. The container is using a different key than when the data was encrypted\n\n' +
+          'Solution: Delete and re-add your SSH keys with the current encryption key.');
+      } else if (error.message.includes('No encrypted data')) {
+        throw error; // Re-throw as-is
+      } else {
+        throw new Error('Failed to decrypt SSH key: ' + error.message);
+      }
     }
   }
 

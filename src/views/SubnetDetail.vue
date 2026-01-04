@@ -343,8 +343,9 @@ export default {
       // Auto-refresh data every 10 seconds to show updates from backend scheduler
       autoScanInterval = setInterval(() => {
         if (!scanning.value) {
-          loadSubnet();
+          // Only reload IPs and statistics, not the full subnet (prevents page scroll)
           loadIPs();
+          refreshStatistics();
         }
       }, 10000); // Refresh every 10 seconds
     }

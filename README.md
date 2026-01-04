@@ -26,12 +26,14 @@ docker run -d --name monipx --restart=unless-stopped \
   -v monipx-data:/app/data \
   -e NODE_ENV=production \
   -e "SSH_ENCRYPTION_KEY=$(openssl rand -base64 32)" \
-  mwanzaa12/monipx:v1.1.1
+  mwanzaa12/monipx:latest
 ```
 
 **Access:** http://localhost:3000
 
 **Platforms:** linux/amd64, linux/arm64 (Mac M1/M2, Raspberry Pi)
+
+**Latest Version:** v1.1.7 | [Release Notes](https://github.com/amwanza-mwz/Monipx/releases/tag/v1.1.7)
 
 ---
 
@@ -45,7 +47,7 @@ docker run -d --name monipx --restart=unless-stopped \
 - 🗺️ **[Documentation Index](00_START_HERE.md)** - Start here for all documentation
 
 **Docker Images:**
-- Docker Hub: `docker pull mwanzaa12/monipx:v1.1.1`
+- Docker Hub: `docker pull mwanzaa12/monipx:latest`
 - GitHub Container Registry: `docker pull ghcr.io/amwanza-mwz/monipx:latest`
 
 ---
@@ -176,7 +178,7 @@ cat ~/.monipx_env
 ### Step 2: Pull Docker Image
 
 ```bash
-docker pull mwanzaa12/monipx:v1.1.1
+docker pull mwanzaa12/monipx:latest
 ```
 
 ### Step 3: Start Monipx
@@ -191,14 +193,14 @@ docker run -d \
   -v monipx-logs:/app/logs \
   -e NODE_ENV=production \
   -e "SSH_ENCRYPTION_KEY=$(cat ~/.monipx_env | cut -d'=' -f2)" \
-  mwanzaa12/monipx:v1.1.1
+  mwanzaa12/monipx:latest
 ```
 
 ### Step 4: Access Monipx
 
-Open your browser: **`http://YOUR_SERVER_IP:3000`**
+Open your browser: **`http://YOUR_SERVER_IP:3001`**
 
-**Example:** `http://10.201.30.23:3000`
+**Example:** `http://192.168.1.100:3001`
 
 **📖 Full Quick Install Guide:** [QUICK_INSTALL.md](QUICK_INSTALL.md)
 
@@ -446,18 +448,70 @@ docker stop monipx
 # Start container
 docker start monipx
 
-# Update to latest version
-docker pull mwanzaa12/monipx:latest
-docker stop monipx
-docker rm monipx
-# Then run the docker run command again with same volumes
-
 # Backup data
 docker run --rm -v monipx-data:/data -v $(pwd):/backup ubuntu tar czf /backup/monipx-backup-$(date +%Y%m%d).tar.gz /data
 
 # Restore data
 docker run --rm -v monipx-data:/data -v $(pwd):/backup ubuntu tar xzf /backup/monipx-backup-YYYYMMDD.tar.gz -C /
 ```
+
+### 🔄 Update to Latest Version
+
+To update your existing Monipx installation to the latest version:
+
+#### Quick Update (One Command)
+
+```bash
+docker stop monipx && docker rm monipx && docker pull mwanzaa12/monipx:latest && docker run -d --name monipx --restart unless-stopped -p 3001:3001 -v monipx-data:/app/data -v monipx-logs:/app/logs -e NODE_ENV=production -e SSH_ENCRYPTION_KEY="YOUR_KEY_HERE" mwanzaa12/monipx:latest
+```
+
+⚠️ **Important:** Replace `YOUR_KEY_HERE` with your actual SSH encryption key from `~/.monipx_env`
+
+#### Step-by-Step Update
+
+1. **Retrieve your encryption key:**
+   ```bash
+   cat ~/.monipx_env
+   ```
+   Copy the key value for use in step 4.
+
+2. **Pull the latest image:**
+   ```bash
+   docker pull mwanzaa12/monipx:latest
+   ```
+
+3. **Stop and remove old container:**
+   ```bash
+   docker stop monipx
+   docker rm monipx
+   ```
+   *Note: Your data is safe in Docker volumes*
+
+4. **Start new container with same volumes:**
+   ```bash
+   docker run -d \
+     --name monipx \
+     --restart unless-stopped \
+     -p 3001:3001 \
+     -v monipx-data:/app/data \
+     -v monipx-logs:/app/logs \
+     -e NODE_ENV=production \
+     -e SSH_ENCRYPTION_KEY="$(cat ~/.monipx_env | cut -d'=' -f2)" \
+     mwanzaa12/monipx:latest
+   ```
+
+5. **Verify the update:**
+   ```bash
+   docker logs -f monipx
+   ```
+   Check the logs for successful startup and verify the version.
+
+**✅ Your data is preserved!** All monitors, SSH sessions, and settings are stored in the `monipx-data` volume and will be available in the updated version.
+
+**📦 Available Versions:**
+- Latest stable: `mwanzaa12/monipx:latest`
+- Specific version: `mwanzaa12/monipx:v1.1.7`
+- View all releases: [GitHub Releases](https://github.com/amwanza-mwz/Monipx/releases)
 
 ### Troubleshooting
 
@@ -499,11 +553,11 @@ sudo systemctl restart docker
 ```bash
 # From Docker Hub (Recommended)
 docker pull mwanzaa12/monipx:latest
-docker pull mwanzaa12/monipx:v1.1.0
+docker pull mwanzaa12/monipx:v1.1.7
 
 # From GitHub Container Registry
 docker pull ghcr.io/amwanza-mwz/monipx:latest
-docker pull ghcr.io/amwanza-mwz/monipx:v1.1.0
+docker pull ghcr.io/amwanza-mwz/monipx:v1.1.7
 ```
 
 ---
@@ -708,7 +762,7 @@ For issues, questions, or contributions, please open an issue on GitHub.
 
 **Status**: ✅ Active Development | 🚀 Ready for Production Use
 
-**Version**: 1.1.0
+**Version**: 1.1.7
 
 ---
 

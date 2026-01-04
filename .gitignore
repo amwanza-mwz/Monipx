@@ -18,7 +18,10 @@ build/
 # Database
 *.db
 *.db-journal
+*.db-shm
+*.db-wal
 data/
+backups/
 
 # IDE
 .vscode/

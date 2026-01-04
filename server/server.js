@@ -5,23 +5,16 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-// Run database migrations on startup
-const { runMigrations } = require('./database/migrate');
-runMigrations()
-  .then(() => {
-    console.log('✅ Database ready');
-  })
-  .catch((error) => {
-    console.error('❌ Database migration failed:', error);
-  });
-
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.NODE_ENV === 'production' ? false : '*',
+    origin: '*',
     methods: ['GET', 'POST'],
+    credentials: true,
   },
+  transports: ['websocket', 'polling'],
+  allowEIO3: true,
 });
 
 const PORT = process.env.PORT || 3001;
@@ -87,37 +80,64 @@ io.on('connection', (socket) => {
 // Make io available to routes
 app.set('io', io);
 
-// Initialize Terminal WebSocket
-const TerminalWebSocket = require('./services/websocket/TerminalWebSocket');
-const terminalWebSocket = new TerminalWebSocket(io);
-app.set('terminalWebSocket', terminalWebSocket);
+// Initialize application after migrations complete
+async function initializeApp() {
+  try {
+    // Check encryption key configuration
+    const KeyEncryption = require('./services/ssh/KeyEncryption');
+    if (!KeyEncryption.isSecure()) {
+      console.error('');
+      console.error('⚠️  ' + '='.repeat(70));
+      console.error('⚠️  WARNING: SSH_ENCRYPTION_KEY NOT CONFIGURED!');
+      console.error('⚠️  ' + '='.repeat(70));
+      console.error('⚠️  SSH credentials will NOT be secure!');
+      console.error('⚠️  Please set SSH_ENCRYPTION_KEY environment variable.');
+      console.error('⚠️  Generate one with: openssl rand -base64 32');
+      console.error('⚠️  ' + '='.repeat(70));
+      console.error('');
+    }
 
-// Start auto-scan scheduler
-const SubnetScheduler = require('./services/subnet/scheduler');
-const subnetScheduler = new SubnetScheduler(io);
-subnetScheduler.start().catch((error) => {
-  console.error('❌ Failed to start subnet scheduler:', error);
-});
+    // Run database migrations first
+    const { runMigrations } = require('./database/migrate');
+    console.log('🔄 Running database migrations...');
+    await runMigrations();
+    console.log('✅ Database ready');
 
-// Start monitoring scheduler
-const MonitorScheduler = require('./services/monitoring/scheduler');
-const monitorScheduler = new MonitorScheduler(io);
-monitorScheduler.start().catch((error) => {
-  console.error('❌ Failed to start monitor scheduler:', error);
-});
+    // Initialize Terminal WebSocket
+    const TerminalWebSocket = require('./services/websocket/TerminalWebSocket');
+    const terminalWebSocket = new TerminalWebSocket(io);
+    app.set('terminalWebSocket', terminalWebSocket);
 
-// Make schedulers available globally
-app.set('subnetScheduler', subnetScheduler);
-app.set('monitorScheduler', monitorScheduler);
+    // Start auto-scan scheduler
+    const SubnetScheduler = require('./services/subnet/scheduler');
+    const subnetScheduler = new SubnetScheduler(io);
+    await subnetScheduler.start();
 
-// Start server
-server.listen(PORT, () => {
-  console.log(`🚀 Monipx server running on port ${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(`🌐 API: http://localhost:${PORT}/api`);
+    // Start monitoring scheduler
+    const MonitorScheduler = require('./services/monitoring/scheduler');
+    const monitorScheduler = new MonitorScheduler(io);
+    await monitorScheduler.start();
+
+    // Make schedulers available globally
+    app.set('subnetScheduler', subnetScheduler);
+    app.set('monitorScheduler', monitorScheduler);
+
+    // Start server
+    server.listen(PORT, () => {
+      console.log(`🚀 Monipx server running on port ${PORT}`);
+      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`🌐 API: http://localhost:${PORT}/api`);
+      }
+    });
+  } catch (error) {
+    console.error('❌ Failed to initialize application:', error);
+    process.exit(1);
   }
-});
+}
+
+// Start the application
+initializeApp();
 
 module.exports = { app, server, io };
 

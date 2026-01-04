@@ -5,6 +5,59 @@ All notable changes to Monipx will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.7] - 2026-01-04
+
+### 🐛 Critical Fixes
+
+#### Terminal Isolation Bug (CRITICAL)
+- **Fixed:** Terminal output was being broadcast to ALL open terminals instead of being isolated per session
+- **Root Cause:** The `sessionId` variable was being set AFTER event handlers were registered
+- **Solution:** Moved `sessionId = props.tabId` assignment to BEFORE `setupEventHandlers()` call
+- **Impact:** ✅ Terminals are now properly isolated - no more cross-terminal data leakage
+
+#### Security Improvements
+- **Removed:** All hardcoded encryption keys from documentation
+- **Improved:** SSH key decryption error handling with clear, actionable messages
+- **Added:** Startup validation for `SSH_ENCRYPTION_KEY` environment variable
+- **Added:** Better error messages for missing or invalid encryption keys
+
+#### WebSocket Connection Fix
+- **Fixed:** Frontend WebSocket connection now uses `window.location.origin` instead of hardcoded localhost
+- **Impact:** Works on any server without configuration changes
+
+### 📝 Documentation Updates
+- Removed hardcoded secrets from `FORCE_UPDATE_COMMANDS.md`
+- Added comprehensive error handling documentation
+- Updated deployment guides with proper environment variable usage
+
+### 🔍 Files Changed
+- `src/components/terminal/TerminalWindow.vue` - Terminal isolation fix
+- `src/services/terminal-socket.js` - WebSocket origin fix
+- `server/services/ssh/KeyEncryption.js` - Improved error handling
+- `server/server.js` - Added encryption key validation
+- `package.json` - Version bump to 1.1.7
+
+### ⚠️ Important Notes
+1. **Encryption Key Required:** You MUST set `SSH_ENCRYPTION_KEY` environment variable
+2. **Terminal Isolation:** If you experienced cross-terminal data leakage, this is now fixed
+3. **Multi-Platform:** Supports `linux/amd64` and `linux/arm64`
+
+### 🚀 Deployment
+```bash
+# Update to latest version
+docker pull mwanzaa12/monipx:latest
+docker stop monipx && docker rm monipx
+docker run -d --name monipx --restart unless-stopped \
+  -p 3001:3001 \
+  -v monipx-data:/app/data \
+  -v monipx-logs:/app/logs \
+  -e NODE_ENV=production \
+  -e SSH_ENCRYPTION_KEY="$(cat ~/.monipx_env | cut -d'=' -f2)" \
+  mwanzaa12/monipx:latest
+```
+
+---
+
 ## [1.1.0] - 2026-01-03
 
 ### 🎉 Major Features Added
@@ -128,6 +181,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **v1.1.7** (2026-01-04) - Terminal Isolation Fix, Security Improvements & Error Handling
 - **v1.1.0** (2026-01-03) - Secure SSH Terminal & Security Enhancements
 - **v1.0.0** (2025-12-15) - Initial Release
 

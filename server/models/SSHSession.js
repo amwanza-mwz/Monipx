@@ -7,7 +7,18 @@ class SSHSession {
   }
 
   static async getById(id) {
-    return await db.prepare('SELECT * FROM ssh_sessions WHERE id = ?').get(id);
+    try {
+      // Ensure ID is a number
+      const numericId = parseInt(id, 10);
+      if (isNaN(numericId)) {
+        console.error(`❌ Invalid session ID: ${id}`);
+        return null;
+      }
+      return await db.prepare('SELECT * FROM ssh_sessions WHERE id = ?').get(numericId);
+    } catch (error) {
+      console.error(`❌ Error fetching session by ID ${id}:`, error);
+      return null;
+    }
   }
 
   static async getByGroup(groupName) {
@@ -218,25 +229,35 @@ class SSHSession {
 
   // Get session with decrypted password for SSH connection
   static async getForConnection(id) {
-    const session = await this.getById(id);
-    if (!session) {
-      return null;
-    }
+    try {
+      console.log(`🔍 getForConnection called with ID: ${id} (type: ${typeof id})`);
 
-    // Decrypt password if it exists
-    if (session.password && session.auth_method === 'password') {
-      try {
-        console.log('🔓 Decrypting session password...');
-        session.decrypted_password = KeyEncryption.decrypt(session.password);
-        // Remove encrypted password from response for security
-        delete session.password;
-      } catch (error) {
-        console.error('❌ Failed to decrypt password:', error);
-        throw new Error('Failed to decrypt session password');
+      const session = await this.getById(id);
+      if (!session) {
+        console.error(`❌ Session not found in database for ID: ${id}`);
+        return null;
       }
-    }
 
-    return session;
+      console.log(`✅ Session found: ${session.name} (auth: ${session.auth_method})`);
+
+      // Decrypt password if it exists
+      if (session.password && session.auth_method === 'password') {
+        try {
+          console.log('🔓 Decrypting session password...');
+          session.decrypted_password = KeyEncryption.decrypt(session.password);
+          // Remove encrypted password from response for security
+          delete session.password;
+        } catch (error) {
+          console.error('❌ Failed to decrypt password:', error);
+          throw new Error('Failed to decrypt session password');
+        }
+      }
+
+      return session;
+    } catch (error) {
+      console.error(`❌ Error in getForConnection for ID ${id}:`, error);
+      throw error;
+    }
   }
 }
 
