@@ -50,7 +50,7 @@ export default {
         foreground: '#e6e1cf',
         cursor: '#ff2667',
         cursorAccent: '#0a0e14',
-        selectionBackground: 'rgba(83, 189, 250, 0.3)',
+        selectionBackground: 'rgba(255, 255, 255, 0.15)',
         selectionForeground: '#ffffff',
         black: '#01060e',
         red: '#ea6c73',
