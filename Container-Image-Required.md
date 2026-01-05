@@ -6,7 +6,7 @@ Requirement before push
 - push to docker hub
 - push to github container registry
 
-Version: 1.1.7
+Version: 1.1.8
 
 **Docker Images:**
 - Docker Hub: `docker pull mwanzaa12/monipx:latest`
