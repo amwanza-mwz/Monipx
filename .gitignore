@@ -85,3 +85,8 @@ run-migrations.js
 # Scripts
 *.sh
 !docker-entrypoint.sh
+
+# Large files
+*.tar.gz
+*.tar
+*.zip
