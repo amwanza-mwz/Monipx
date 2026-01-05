@@ -81,3 +81,7 @@ verify-*.js
 check_keys.js
 rebuild.sh
 run-migrations.js
+
+# Scripts
+*.sh
+!docker-entrypoint.sh
