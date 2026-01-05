@@ -1,0 +1,7 @@
+{
+  "tag_name": "v1.1.2",
+  "name": "MoniPX v1.1.2 - SSH & Terminal Fixes",
+  "body": "## \ud83d\udc1b Bug Fixes\n\n### SSH Key Authentication Error\n- **Fixed:** \"SSH session not found (ID: X)\" error in production\n- **Root Cause:** Session ID type mismatch between string and integer\n- **Solution:** Added proper type conversion and validation in SSHManager\n- **Files Changed:** \n  - `server/services/ssh/SSHManager.js`\n  - `server/models/SSHSession.js`\n\n### Terminal Layout Issue\n- **Fixed:** Terminal appearing under navigation bar\n- **Root Cause:** Incorrect positioning and z-index\n- **Solution:** Terminal now renders in full-screen mode with proper positioning\n- **Files Changed:**\n  - `src/App.vue`\n  - `src/views/SecureTerminal.vue`\n\n## \ud83d\udce6 Docker Images\n\nMulti-platform images (linux/amd64, linux/arm64):\n\n```bash\ndocker pull mwanzaa12/monipx:1.1.2\ndocker pull ghcr.io/amwanza-mwz/monipx:1.1.2\n```\n\n## \ud83d\ude80 Deployment\n\n### Update Production\n\n```bash\ndocker pull mwanzaa12/monipx:1.1.2\ndocker stop monipx && docker rm monipx\ndocker run -d --name monipx --restart unless-stopped \\\n  -p 3001:3001 \\\n  -v monipx-data:/app/data \\\n  -v monipx-logs:/app/logs \\\n  -e NODE_ENV=production \\\n  mwanzaa12/monipx:1.1.2\n```\n\n## \ud83d\udccb What's Changed\n\n**Full Changelog**: https://github.com/amwanza-mwz/Monipx/compare/v1.1.0...v1.1.2\n",
+  "draft": false,
+  "prerelease": false
+}
