@@ -1,4 +1,6 @@
 const TerminalSession = require('../ssh/TerminalSession');
+const SSHSession = require('../../models/SSHSession');
+const ActivityLog = require('../../models/ActivityLog');
 
 class TerminalWebSocket {
   constructor(io) {
@@ -16,19 +18,28 @@ class TerminalWebSocket {
       // Handle terminal connection request
       socket.on('terminal:connect', async (data) => {
         try {
-          const { sessionId, sshSessionId, options } = data;
+          const { sessionId, sshSessionId, options, userId, username } = data;
 
           console.log(`\n${'='.repeat(80)}`);
           console.log(`📺 TERMINAL CONNECT REQUEST RECEIVED`);
           console.log(`${'='.repeat(80)}`);
           console.log(`   Tab/Session ID: ${sessionId}`);
           console.log(`   SSH Session ID: ${sshSessionId} (type: ${typeof sshSessionId})`);
+          console.log(`   User ID: ${userId}, Username: ${username}`);
           console.log(`   Options:`, JSON.stringify(options, null, 2));
           console.log(`${'='.repeat(80)}\n`);
 
           // Validate sshSessionId
           if (!sshSessionId) {
             throw new Error('SSH Session ID is required');
+          }
+
+          // Get SSH session details for logging
+          let sshSessionDetails = null;
+          try {
+            sshSessionDetails = await SSHSession.getById(sshSessionId);
+          } catch (err) {
+            console.warn('Could not get SSH session details for logging:', err.message);
           }
 
           // Create terminal session
@@ -41,6 +52,28 @@ class TerminalWebSocket {
           );
 
           console.log(`✅ Terminal session created with connection ID: ${connectionId}`);
+
+          // Log terminal connection activity
+          try {
+            await ActivityLog.log({
+              userId: userId || null,
+              username: username || 'unknown',
+              action: ActivityLog.ACTIONS.CONNECT,
+              category: ActivityLog.CATEGORIES.TERMINAL,
+              resourceType: 'server',
+              resourceId: sshSessionId,
+              resourceName: sshSessionDetails ? `${sshSessionDetails.name} (${sshSessionDetails.host})` : `Session ${sshSessionId}`,
+              details: {
+                host: sshSessionDetails?.host,
+                port: sshSessionDetails?.port,
+                sshUsername: sshSessionDetails?.username,
+                sessionId: sessionId,
+              },
+            });
+            console.log(`📝 Activity logged: Terminal connect to ${sshSessionDetails?.host || sshSessionId}`);
+          } catch (logError) {
+            console.warn('Failed to log terminal connection activity:', logError.message);
+          }
 
           // Send success response
           socket.emit('terminal:connected', {
@@ -76,10 +109,46 @@ class TerminalWebSocket {
       });
 
       // Handle terminal disconnect
-      socket.on('terminal:disconnect', (data) => {
-        const { sessionId } = data;
+      socket.on('terminal:disconnect', async (data) => {
+        const { sessionId, userId, username } = data;
         console.log(`🔌 Terminal disconnect request: ${sessionId}`);
+
+        // Get session info before closing for logging
+        const session = TerminalSession.getSession(sessionId);
+        const sshSessionId = session?.sshSessionId;
+
+        let sshSessionDetails = null;
+        if (sshSessionId) {
+          try {
+            sshSessionDetails = await SSHSession.getById(sshSessionId);
+          } catch (err) {
+            console.warn('Could not get SSH session details for logging:', err.message);
+          }
+        }
+
         TerminalSession.closeSession(sessionId);
+
+        // Log terminal disconnect activity
+        try {
+          await ActivityLog.log({
+            userId: userId || null,
+            username: username || 'unknown',
+            action: ActivityLog.ACTIONS.DISCONNECT,
+            category: ActivityLog.CATEGORIES.TERMINAL,
+            resourceType: 'server',
+            resourceId: sshSessionId,
+            resourceName: sshSessionDetails ? `${sshSessionDetails.name} (${sshSessionDetails.host})` : `Session ${sshSessionId}`,
+            details: {
+              host: sshSessionDetails?.host,
+              port: sshSessionDetails?.port,
+              sshUsername: sshSessionDetails?.username,
+              sessionId: sessionId,
+            },
+          });
+          console.log(`📝 Activity logged: Terminal disconnect from ${sshSessionDetails?.host || sshSessionId}`);
+        } catch (logError) {
+          console.warn('Failed to log terminal disconnect activity:', logError.message);
+        }
       });
 
       // Handle socket disconnect

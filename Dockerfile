@@ -21,6 +21,9 @@ RUN npm run build
 # Remove dev dependencies to reduce image size
 RUN npm prune --production
 
+# Set production environment
+ENV NODE_ENV=production
+
 # Create data and logs directories
 RUN mkdir -p /app/data /app/logs && chown -R node:node /app/data /app/logs
 

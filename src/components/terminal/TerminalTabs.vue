@@ -65,17 +65,18 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #1e1e1e;
+  background: #0d1117;
 }
 
 .tabs-header {
   display: flex;
   align-items: center;
-  background: #252526;
-  border-bottom: 1px solid #3e3e3e;
-  height: 42px;
-  padding: 0;
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+  height: 40px;
+  padding: 0 0.5rem;
   flex-shrink: 0;
+  gap: 2px;
 }
 
 .tabs-list {
@@ -83,57 +84,57 @@ export default {
   flex: 1;
   overflow-x: auto;
   height: 100%;
+  gap: 2px;
+  padding: 4px 0;
 }
 
 .tabs-list::-webkit-scrollbar {
-  height: 3px;
+  height: 4px;
+}
+
+.tabs-list::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .tabs-list::-webkit-scrollbar-thumb {
-  background: #3e3e3e;
-  border-radius: 3px;
+  background: #30363d;
+  border-radius: 4px;
 }
 
 .tabs-list::-webkit-scrollbar-thumb:hover {
-  background: #007acc;
+  background: #58a6ff;
 }
 
 .tab-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 18px;
-  background: #1e1e1e;
-  border-right: 1px solid #3e3e3e;
+  gap: 8px;
+  padding: 0 14px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
-  min-width: 180px;
-  max-width: 280px;
-  height: 100%;
+  transition: all 0.15s ease;
+  min-width: 160px;
+  max-width: 260px;
+  height: 32px;
   position: relative;
 }
 
 .tab-item:hover {
-  background: #2d2d2d;
+  background: rgba(110, 118, 129, 0.1);
+  border-color: #30363d;
 }
 
 .tab-item.active {
-  background: #252526;
-}
-
-.tab-item.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #007acc;
+  background: rgba(88, 166, 255, 0.1);
+  border-color: #58a6ff;
 }
 
 .tab-icon {
-  color: #007acc;
-  font-size: 15px;
+  color: #58a6ff;
+  font-size: 14px;
+  flex-shrink: 0;
 }
 
 .tab-name {
@@ -141,55 +142,72 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 13px;
-  color: #cccccc;
+  font-size: 12px;
+  color: #c9d1d9;
   font-weight: 500;
 }
 
+.tab-item.active .tab-name {
+  color: #ffffff;
+}
+
 .tab-status {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: #686868;
+  background: #6e7681;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(110, 118, 129, 0.2);
 }
 
 .tab-status.status-connecting {
-  background: #f9af4f;
-  animation: pulse 1.5s infinite;
+  background: #d29922;
+  box-shadow: 0 0 0 2px rgba(210, 153, 34, 0.2);
+  animation: pulse-glow 1.5s ease-in-out infinite;
 }
 
 .tab-status.status-connected {
-  background: #91b362;
+  background: #7ee787;
+  box-shadow: 0 0 0 2px rgba(126, 231, 135, 0.2);
 }
 
 .tab-status.status-disconnected {
-  background: #686868;
+  background: #6e7681;
+  box-shadow: 0 0 0 2px rgba(110, 118, 129, 0.2);
 }
 
 .tab-status.status-error {
-  background: #ea6c73;
+  background: #ff7b72;
+  box-shadow: 0 0 0 2px rgba(255, 123, 114, 0.2);
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 2px rgba(210, 153, 34, 0.2);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 0 4px rgba(210, 153, 34, 0.3);
+  }
 }
 
 .tab-close {
   background: transparent;
   border: none;
-  color: #858585;
+  color: #6e7681;
   padding: 0;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-radius: 5px;
-  transition: all 0.2s;
-  font-size: 16px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  font-size: 14px;
   opacity: 0;
+  flex-shrink: 0;
 }
 
 .tab-item:hover .tab-close {
@@ -197,14 +215,15 @@ export default {
 }
 
 .tab-close:hover {
-  background: #3e3e3e;
-  color: #cccccc;
+  background: rgba(255, 123, 114, 0.15);
+  color: #ff7b72;
 }
 
 .tabs-body {
   flex: 1;
   overflow: hidden;
-  background: #1e1e1e;
+  background: #0d1117;
+  padding: 0.5rem;
 }
 
 .tab-pane {

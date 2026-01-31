@@ -43,30 +43,30 @@ export default {
       'status-error': status.value === 'error',
     }));
 
-    // Modern dark terminal theme
+    // Modern dark terminal theme with improved selection visibility
     const getTerminalTheme = () => {
       return {
-        background: '#0a0e14',
-        foreground: '#e6e1cf',
-        cursor: '#ff2667',
-        cursorAccent: '#0a0e14',
-        selectionBackground: 'rgba(255, 255, 255, 0.15)',
-        selectionForeground: '#ffffff',
-        black: '#01060e',
-        red: '#ea6c73',
-        green: '#91b362',
-        yellow: '#f9af4f',
-        blue: '#53bdfa',
-        magenta: '#fae994',
-        cyan: '#90e1c6',
-        white: '#c7c7c7',
-        brightBlack: '#686868',
-        brightRed: '#f07178',
-        brightGreen: '#c2d94c',
-        brightYellow: '#ffb454',
-        brightBlue: '#59c2ff',
-        brightMagenta: '#ffee99',
-        brightCyan: '#95e6cb',
+        background: '#0d1117',
+        foreground: '#c9d1d9',
+        cursor: '#58a6ff',
+        cursorAccent: '#0d1117',
+        // Use transparent selection so text remains visible
+        selectionBackground: 'rgba(255, 255, 255, 0.25)',
+        black: '#0d1117',
+        red: '#ff7b72',
+        green: '#7ee787',
+        yellow: '#d29922',
+        blue: '#58a6ff',
+        magenta: '#bc8cff',
+        cyan: '#39c5cf',
+        white: '#b1bac4',
+        brightBlack: '#6e7681',
+        brightRed: '#ffa198',
+        brightGreen: '#9be9a8',
+        brightYellow: '#e3b341',
+        brightBlue: '#79c0ff',
+        brightMagenta: '#d2a8ff',
+        brightCyan: '#56d4dd',
         brightWhite: '#ffffff',
       };
     };
@@ -75,6 +75,9 @@ export default {
     let dataHandler = null;
     let closeHandler = null;
     let errorHandler = null;
+    let terminalInputHandler = null;
+    let terminalResizeHandler = null;
+    let inputHandlerRegistered = false;
 
     const setupEventHandlers = () => {
       if (eventHandlersRegistered) return;
@@ -190,25 +193,37 @@ export default {
         emit('status-change', { tabId: props.tabId, status: 'connected' });
         terminal.writeln('\x1b[32m✓ Connected to ' + props.session.host + '\x1b[0m\r\n');
 
-        // Handle user input
-        terminal.onData((data) => {
-          // If disconnected and user presses Enter, reconnect
-          if (status.value === 'disconnected' && data === '\r') {
-            terminal.writeln('\r\n\x1b[33mReconnecting...\x1b[0m');
-            connect();
-            return;
+        // Handle user input - only register once to prevent duplicate commands
+        if (!inputHandlerRegistered) {
+          // Dispose previous handlers if they exist
+          if (terminalInputHandler) {
+            terminalInputHandler.dispose();
+          }
+          if (terminalResizeHandler) {
+            terminalResizeHandler.dispose();
           }
 
-          // Send input to terminal if connected
-          if (status.value === 'connected') {
-            terminalSocket.sendInput(sessionId, data);
-          }
-        });
+          terminalInputHandler = terminal.onData((data) => {
+            // If disconnected and user presses Enter, reconnect
+            if (status.value === 'disconnected' && data === '\r') {
+              terminal.writeln('\r\n\x1b[33mReconnecting...\x1b[0m');
+              connect();
+              return;
+            }
 
-        // Handle terminal resize
-        terminal.onResize(({ rows, cols }) => {
-          terminalSocket.resize(sessionId, rows, cols);
-        });
+            // Send input to terminal if connected
+            if (status.value === 'connected') {
+              terminalSocket.sendInput(sessionId, data);
+            }
+          });
+
+          // Handle terminal resize
+          terminalResizeHandler = terminal.onResize(({ rows, cols }) => {
+            terminalSocket.resize(sessionId, rows, cols);
+          });
+
+          inputHandlerRegistered = true;
+        }
 
         // Handle window resize
         const handleResize = () => {
@@ -257,6 +272,14 @@ export default {
         terminalSocket.off('error', errorHandler);
       }
 
+      // Dispose terminal input/resize handlers
+      if (terminalInputHandler) {
+        terminalInputHandler.dispose();
+      }
+      if (terminalResizeHandler) {
+        terminalResizeHandler.dispose();
+      }
+
       // Disconnect session
       if (sessionId) {
         terminalSocket.disconnect(sessionId);
@@ -285,40 +308,123 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #1e1e1e;
+  background: #0d1117;
+  border-radius: 8px;
+  overflow: hidden;
 }
+
 .terminal-header {
-  padding: 0.75rem 1rem;
-  background: #252526;
-  border-bottom: 1px solid #3e3e3e;
+  padding: 0.625rem 1rem;
+  background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+  border-bottom: 1px solid #30363d;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  min-height: 44px;
 }
+
 .terminal-info {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: #cccccc;
-  font-size: 0.875rem;
+  gap: 0.625rem;
+  color: #c9d1d9;
+  font-size: 0.8125rem;
   font-weight: 500;
+  letter-spacing: 0.01em;
 }
+
 .terminal-info i {
-  color: #007acc;
+  color: #58a6ff;
+  font-size: 1rem;
 }
+
 .terminal-status {
-  font-size: 0.75rem;
-  padding: 0.375rem 0.75rem;
-  border-radius: 12px;
-  font-weight: 500;
+  font-size: 0.6875rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
 }
-.status-connecting { background: #f9af4f; color: #000; }
-.status-connected { background: #91b362; color: #fff; }
-.status-disconnected { background: #686868; color: #fff; }
-.status-error { background: #ea6c73; color: #fff; }
+
+.terminal-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-connecting {
+  background: rgba(210, 153, 34, 0.15);
+  color: #d29922;
+  border: 1px solid rgba(210, 153, 34, 0.3);
+}
+
+.status-connecting::before {
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+.status-connected {
+  background: rgba(126, 231, 135, 0.15);
+  color: #7ee787;
+  border: 1px solid rgba(126, 231, 135, 0.3);
+}
+
+.status-disconnected {
+  background: rgba(110, 118, 129, 0.15);
+  color: #8b949e;
+  border: 1px solid rgba(110, 118, 129, 0.3);
+}
+
+.status-error {
+  background: rgba(255, 123, 114, 0.15);
+  color: #ff7b72;
+  border: 1px solid rgba(255, 123, 114, 0.3);
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
 .terminal-body {
   flex: 1;
   overflow: hidden;
-  background: #1e1e1e;
+  background: #0d1117;
+  padding: 4px;
+}
+
+.terminal-body :deep(.xterm) {
+  height: 100%;
+}
+
+/* xterm.js overrides for modern look */
+:deep(.xterm) {
+  padding: 0.25rem;
+}
+
+:deep(.xterm-viewport) {
+  overflow-y: auto !important;
+}
+
+:deep(.xterm-viewport::-webkit-scrollbar) {
+  width: 8px;
+}
+
+:deep(.xterm-viewport::-webkit-scrollbar-track) {
+  background: transparent;
+}
+
+:deep(.xterm-viewport::-webkit-scrollbar-thumb) {
+  background: #30363d;
+  border-radius: 4px;
+}
+
+:deep(.xterm-viewport::-webkit-scrollbar-thumb:hover) {
+  background: #484f58;
 }
 </style>

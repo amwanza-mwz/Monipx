@@ -13,6 +13,8 @@ router.use('/ssh-sessions', require('./api/ssh-sessions'));
 router.use('/ssh-keys', require('./api/ssh-keys'));
 router.use('/ssh-groups', require('./api/ssh-groups'));
 router.use('/ssh-terminal', require('./api/ssh-terminal'));
+router.use('/team', require('./api/team'));
+router.use('/activity-logs', require('./api/activity-logs'));
 
 // API info
 router.get('/', (req, res) => {
@@ -29,6 +31,8 @@ router.get('/', (req, res) => {
       sshKeys: '/api/ssh-keys',
       sshGroups: '/api/ssh-groups',
       sshTerminal: '/api/ssh-terminal',
+      team: '/api/team',
+      activityLogs: '/api/activity-logs',
     },
   });
 });

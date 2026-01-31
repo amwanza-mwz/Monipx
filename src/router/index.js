@@ -57,6 +57,18 @@ const routes = [
     component: () => import('../views/SettingsNew.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/team',
+    name: 'TeamManagement',
+    component: () => import('../views/TeamManagement.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/activity-logs',
+    name: 'ActivityLogs',
+    component: () => import('../views/ActivityLogs.vue'),
+    meta: { requiresAuth: true },
+  },
 ];
 
 const router = createRouter({

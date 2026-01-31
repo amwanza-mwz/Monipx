@@ -67,6 +67,21 @@ class TerminalSocket {
   }
 
   /**
+   * Get current user info from localStorage
+   */
+  getCurrentUser() {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        return JSON.parse(userStr);
+      }
+    } catch (e) {
+      console.warn('Could not get user from localStorage:', e);
+    }
+    return null;
+  }
+
+  /**
    * Connect to SSH session
    * @param {string} sessionId - Unique session ID
    * @param {number} sshSessionId - SSH session database ID
@@ -94,6 +109,9 @@ class TerminalSocket {
       });
       console.log('✅ Socket connected, proceeding...');
     }
+
+    // Get current user info for activity logging
+    const user = this.getCurrentUser();
 
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
@@ -128,11 +146,13 @@ class TerminalSocket {
       this.on('error', onError);
 
       console.log('📤 [TerminalSocket] Emitting terminal:connect event');
-      console.log('   Payload:', { sessionId, sshSessionId, options });
+      console.log('   Payload:', { sessionId, sshSessionId, options, userId: user?.id, username: user?.username });
       this.socket.emit('terminal:connect', {
         sessionId,
         sshSessionId,
         options,
+        userId: user?.id,
+        username: user?.username,
       });
     });
   }
@@ -182,8 +202,13 @@ class TerminalSocket {
       return;
     }
 
+    // Get current user info for activity logging
+    const user = this.getCurrentUser();
+
     this.socket.emit('terminal:disconnect', {
       sessionId,
+      userId: user?.id,
+      username: user?.username,
     });
   }
 

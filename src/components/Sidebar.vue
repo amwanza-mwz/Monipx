@@ -38,6 +38,18 @@
         </div>
         <span v-if="!isCollapsed" class="nav-text">{{ $t('nav.secureTerminal') }}</span>
       </router-link>
+      <router-link to="/team" class="nav-item" title="Team">
+        <div class="nav-icon">
+          <i class="bi bi-people"></i>
+        </div>
+        <span v-if="!isCollapsed" class="nav-text">Team</span>
+      </router-link>
+      <router-link to="/activity-logs" class="nav-item" title="Activity Logs">
+        <div class="nav-icon">
+          <i class="bi bi-journal-text"></i>
+        </div>
+        <span v-if="!isCollapsed" class="nav-text">Activity</span>
+      </router-link>
     </nav>
     <div class="sidebar-footer">
       <div class="user-dropdown" :class="{ 'dropdown-open': showUserDropdown }">
