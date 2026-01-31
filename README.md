@@ -2,7 +2,7 @@
 
 **Self-hosted network monitoring & IP inventory tool with SSH terminal - Track subnets, monitor uptime**
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-AGPLv3-blue.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20.4-green.svg)](https://nodejs.org/)
 [![Docker Hub](https://img.shields.io/badge/docker%20hub-mwanzaa12%2Fmonipx-blue)](https://hub.docker.com/r/mwanzaa12/monipx)
@@ -35,7 +35,7 @@ docker run -d --name monipx --restart=unless-stopped \
 
 **Platforms:** linux/amd64, linux/arm64 (Mac M1/M2, Raspberry Pi)
 
-**Latest Version:** v1.1.7 | [Release Notes](https://github.com/amwanza-mwz/Monipx/releases/tag/v1.1.7)
+**Latest Version:** v1.1.9 | [Release Notes](https://github.com/amwanza-mwz/Monipx/releases/tag/v1.1.9)
 
 ---
 
@@ -514,7 +514,7 @@ docker stop monipx && docker rm monipx && docker pull mwanzaa12/monipx:latest &&
 
 **📦 Available Versions:**
 - Latest stable: `mwanzaa12/monipx:latest`
-- Specific version: `mwanzaa12/monipx:v1.1.7`
+- Specific version: `mwanzaa12/monipx:v1.1.9`
 - View all releases: [GitHub Releases](https://github.com/amwanza-mwz/Monipx/releases)
 
 ### Troubleshooting
@@ -557,11 +557,11 @@ sudo systemctl restart docker
 ```bash
 # From Docker Hub (Recommended)
 docker pull mwanzaa12/monipx:latest
-docker pull mwanzaa12/monipx:v1.1.7
+docker pull mwanzaa12/monipx:v1.1.9
 
 # From GitHub Container Registry
 docker pull ghcr.io/amwanza-mwz/monipx:latest
-docker pull ghcr.io/amwanza-mwz/monipx:v1.1.7
+docker pull ghcr.io/amwanza-mwz/monipx:v1.1.9
 ```
 
 ---
@@ -728,7 +728,7 @@ Monipx is an open-source project. Contributions are welcome!
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under **AGPLv3 with additional terms** - free for personal and internal use, no commercial resale without permission. See the [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -746,9 +746,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Lead Engineer at MwzConnect
 - Passionate about open-source development
-- GitHub: [@mwzconnect](https://github.com/mwzconnect)
+- GitHub: [@amwanza-mwz](https://github.com/amwanza-mwz)
 
-**Organization:** [MwzConnect](https://github.com/mwzconnect)
+---
+
+## 🏢 Software Owner
+
+**MwzConnect**
+
+- Website: [mwzconnect.com](https://mwzconnect.com)
+- GitHub: [@mwzconnect](https://github.com/mwzconnect)
 
 ---
 
@@ -766,8 +773,8 @@ For issues, questions, or contributions, please open an issue on GitHub.
 
 **Status**: ✅ Active Development | 🚀 Ready for Production Use
 
-**Version**: 1.1.7
+**Version**: 1.1.9
 
 ---
 
-*Built with ❤️ by Arnold Mwanza for the open-source community*
+*Software owned by [MwzConnect](https://mwzconnect.com) - Built with passion for the open-source community*
