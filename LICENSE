@@ -1,16 +1,54 @@
-MIT License
+Monipx License
 
 Copyright (c) 2026 Arnold Mwanza & MwzConnect
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+The Monipx software is licensed under the GNU Affero General Public License v3.0
+(AGPLv3) with the following additional terms:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+## Additional Terms
+
+### 1. Non-Commercial Resale Restriction
+
+You may NOT:
+- Sell, resell, or redistribute this software as a commercial product
+- Offer this software as a paid service or SaaS without explicit written permission
+- White-label or rebrand this software for commercial sale
+- Bundle this software in a commercial product offering
+
+### 2. Permitted Uses
+
+You MAY:
+- Use this software for personal, internal, or educational purposes at no cost
+- Modify and customize the software for your own use
+- Deploy this software within your organization
+- Contribute improvements back to the project
+- Use this software for non-commercial purposes
+
+### 3. Attribution Requirement
+
+All copies or substantial portions of the Software must include:
+- This license and copyright notice
+- Clear attribution to the original Monipx project
+- A link to the original repository: https://github.com/amwanza-mwz/Monipx
+
+### 4. Network Use
+
+If you modify this software and run it on a server accessible to others,
+you must make your modified source code available under these same terms.
+
+## AGPLv3 Base License
+
+This software is distributed under the GNU Affero General Public License v3.0.
+See https://www.gnu.org/licenses/agpl-3.0.html for the full license text.
+
+## Summary
+
+- Free for personal and internal business use
+- No selling or offering as a paid service
+- Modifications must be shared under the same license
+- Attribution required
+
+## Disclaimer
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -20,3 +58,4 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+For commercial licensing inquiries, contact: arnold@mwzconnect.com
