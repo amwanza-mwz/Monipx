@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../../models/User');
 const Settings = require('../../models/Settings');
+const ActivityLog = require('../../models/ActivityLog');
 
 // Check if setup is needed
 router.get('/setup-status', async (req, res) => {
@@ -68,6 +69,8 @@ router.post('/setup', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
+    const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const userAgent = req.headers['user-agent'];
 
     if (!username || !password) {
       return res.status(400).json({ error: 'Username and password are required' });
@@ -75,16 +78,54 @@ router.post('/login', async (req, res) => {
 
     const isValid = await User.verifyPassword(username, password);
     if (!isValid) {
+      // Log failed login attempt
+      await ActivityLog.log({
+        username,
+        action: ActivityLog.ACTIONS.LOGIN_FAILED,
+        category: ActivityLog.CATEGORIES.AUTH,
+        details: { reason: 'Invalid credentials' },
+        ipAddress,
+        userAgent,
+      });
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const user = await User.getByUsername(username);
+
+    // Check if user is disabled
+    if (user.status === 'disabled') {
+      await ActivityLog.log({
+        userId: user.id,
+        username: user.username,
+        action: ActivityLog.ACTIONS.LOGIN_FAILED,
+        category: ActivityLog.CATEGORIES.AUTH,
+        details: { reason: 'Account disabled' },
+        ipAddress,
+        userAgent,
+      });
+      return res.status(403).json({ error: 'Account is disabled. Please contact an administrator.' });
+    }
+
+    // Update last login
+    await User.updateLastLogin(user.id);
+
+    // Log successful login
+    await ActivityLog.log({
+      userId: user.id,
+      username: user.username,
+      action: ActivityLog.ACTIONS.LOGIN,
+      category: ActivityLog.CATEGORIES.AUTH,
+      ipAddress,
+      userAgent,
+    });
+
     res.json({
       message: 'Login successful',
       user: {
         id: user.id,
         username: user.username,
         email: user.email,
+        role: user.role || 'member',
         is_admin: user.is_admin === 1,
       },
     });

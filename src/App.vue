@@ -20,6 +20,7 @@ import { useThemeStore } from './stores/theme';
 import { useUpdateStore } from './stores/update';
 import Sidebar from './components/Sidebar.vue';
 import TopBar from './components/TopBar.vue';
+import api from './services/api';
 
 export default {
   name: 'App',
@@ -35,13 +36,14 @@ export default {
     const theme = computed(() => themeStore.theme);
     const showNavbar = ref(true);
     const sidebarCollapsed = ref(localStorage.getItem('sidebarCollapsed') === 'true');
+    const isAuthValid = ref(false);
+    const authChecked = ref(false);
 
     // Provide sidebar state to all child components
     provide('sidebarCollapsed', sidebarCollapsed);
 
     // Hide layout on login, setup, and terminal pages
     const showLayout = computed(() => {
-      const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
       const isAuthPage = route.path === '/login' || route.path === '/setup';
       const isTerminalPage = route.path === '/secure-terminal';
 
@@ -50,8 +52,8 @@ export default {
         return false;
       }
 
-      // Only show layout if authenticated
-      return isAuthenticated;
+      // Only show layout if auth is validated
+      return isAuthValid.value && authChecked.value;
     });
 
     watch(() => route.path, (newPath) => {
@@ -81,6 +83,32 @@ export default {
 
       // Listen for sidebar toggle events
       window.addEventListener('sidebar-toggle', handleSidebarToggle);
+
+      // Validate authentication on app load
+      const storedAuth = localStorage.getItem('isAuthenticated') === 'true';
+      if (storedAuth) {
+        try {
+          // Verify session is still valid with server
+          await api.get('/auth/me');
+          isAuthValid.value = true;
+        } catch (error) {
+          console.error('Session invalid, logging out:', error);
+          // Clear auth state and redirect to login
+          localStorage.removeItem('isAuthenticated');
+          localStorage.removeItem('user');
+          isAuthValid.value = false;
+          if (route.path !== '/login' && route.path !== '/setup') {
+            router.push('/login');
+          }
+        }
+      } else {
+        isAuthValid.value = false;
+        // Redirect to login if not on auth pages
+        if (route.path !== '/login' && route.path !== '/setup') {
+          router.push('/login');
+        }
+      }
+      authChecked.value = true;
 
       // Ensure theme is applied immediately
       const currentTheme = themeStore.theme;

@@ -117,57 +117,64 @@ class SSHManager {
       // Create connection log (use numericSessionId to ensure correct type)
       const log = await SSHConnectionLog.create({ session_id: numericSessionId });
 
-      // Connection configuration with legacy algorithms for Cisco devices
+      // Connection configuration optimized for speed with legacy fallback
       const config = {
         host: session.host,
         port: session.port,
         username: session.username,
         keepaliveInterval: (session.keep_alive || 30) * 1000,
         keepaliveCountMax: 3,
-        readyTimeout: 30000,
-        // Add legacy algorithms for older devices like Cisco
+        readyTimeout: 15000, // Reduced from 30s to 15s for faster timeout
+        // Optimized algorithm order - fastest/modern first, legacy last
         algorithms: {
           kex: [
-            'diffie-hellman-group-exchange-sha256',
-            'diffie-hellman-group14-sha256',
-            'diffie-hellman-group-exchange-sha1',
-            'diffie-hellman-group14-sha1',
-            'diffie-hellman-group1-sha1',
+            // Modern fast algorithms first
+            'curve25519-sha256',
+            'curve25519-sha256@libssh.org',
             'ecdh-sha2-nistp256',
             'ecdh-sha2-nistp384',
             'ecdh-sha2-nistp521',
-            'curve25519-sha256',
-            'curve25519-sha256@libssh.org'
+            // Legacy algorithms for older devices (Cisco, etc.)
+            'diffie-hellman-group14-sha256',
+            'diffie-hellman-group-exchange-sha256',
+            'diffie-hellman-group14-sha1',
+            'diffie-hellman-group-exchange-sha1',
+            'diffie-hellman-group1-sha1'
           ],
           cipher: [
+            // Fast GCM ciphers first (hardware accelerated)
+            'aes128-gcm@openssh.com',
+            'aes256-gcm@openssh.com',
+            'aes128-gcm',
+            'aes256-gcm',
+            // CTR mode (fast)
             'aes128-ctr',
             'aes192-ctr',
             'aes256-ctr',
-            'aes128-gcm',
-            'aes128-gcm@openssh.com',
-            'aes256-gcm',
-            'aes256-gcm@openssh.com',
+            // CBC mode fallback for legacy
             'aes128-cbc',
             'aes192-cbc',
             'aes256-cbc',
             '3des-cbc'
           ],
           serverHostKey: [
-            'ssh-rsa',
-            'rsa-sha2-256',
-            'rsa-sha2-512',
+            // Modern keys first
+            'ssh-ed25519',
             'ecdsa-sha2-nistp256',
             'ecdsa-sha2-nistp384',
             'ecdsa-sha2-nistp521',
-            'ssh-ed25519'
+            'rsa-sha2-512',
+            'rsa-sha2-256',
+            'ssh-rsa'
           ],
           hmac: [
+            // ETM (Encrypt-then-MAC) modes are faster
+            'hmac-sha2-256-etm@openssh.com',
+            'hmac-sha2-512-etm@openssh.com',
             'hmac-sha2-256',
             'hmac-sha2-512',
             'hmac-sha1',
-            'hmac-md5',
-            'hmac-sha2-256-etm@openssh.com',
-            'hmac-sha2-512-etm@openssh.com'
+            'hmac-md5'
           ]
         }
       };
