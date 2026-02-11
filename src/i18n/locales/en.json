@@ -93,6 +93,7 @@
     "title": "Settings",
     "subtitle": "Manage your application preferences and configuration",
     "sections": {
+      "profile": "Profile",
       "general": "General",
       "appearance": "Appearance",
       "security": "Security",

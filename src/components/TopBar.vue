@@ -75,19 +75,10 @@ export default {
     }
 
     onMounted(() => {
-      // Listen for sidebar collapse changes
-      const checkSidebar = () => {
-        sidebarCollapsed.value = localStorage.getItem('sidebarCollapsed') === 'true';
-      };
-
-      window.addEventListener('storage', (e) => {
-        if (e.key === 'sidebarCollapsed') {
-          checkSidebar();
-        }
+      // Listen for sidebar toggle events (dispatched by Sidebar component)
+      window.addEventListener('sidebar-toggle', (event) => {
+        sidebarCollapsed.value = event.detail.collapsed;
       });
-
-      // Also check periodically in case storage event doesn't fire
-      setInterval(checkSidebar, 100);
 
       // Load cached update data and check for updates
       updateStore.loadCachedData();

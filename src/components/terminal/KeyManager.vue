@@ -10,6 +10,14 @@
           <button type="button" class="btn-close" @click="$emit('close')"></button>
         </div>
         <div class="modal-body">
+          <!-- Toast notification -->
+          <transition name="toast-fade">
+            <div v-if="toastMessage" class="km-toast" :class="toastType">
+              <i class="bi" :class="toastType === 'success' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+              <span>{{ toastMessage }}</span>
+            </div>
+          </transition>
+
           <div class="key-actions mb-3">
             <button class="btn btn-sm btn-primary" @click="showUploadForm = true">
               <i class="bi bi-upload"></i>
@@ -473,6 +481,16 @@ export default {
   setup(props, { emit }) {
     const keys = ref([]);
     const loading = ref(false);
+    const toastMessage = ref('');
+    const toastType = ref('success');
+    let toastTimer = null;
+
+    const showToast = (message, type = 'success') => {
+      toastMessage.value = message;
+      toastType.value = type;
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toastMessage.value = ''; }, 4000);
+    };
     const showUploadForm = ref(false);
     const showGenerateForm = ref(false);
     const showKeyModal = ref(false);
@@ -528,12 +546,12 @@ export default {
 
         // Validate required fields
         if (!uploadForm.value.name) {
-          alert('❌ Please enter a name for the SSH key');
+          showToast('Please enter a name for the SSH key', 'error');
           return;
         }
 
         if (!uploadForm.value.private_key && !uploadForm.value.public_key) {
-          alert('❌ No key data found!\n\nPlease:\n1. Click "Choose File" and select your private key file, OR\n2. Paste your private key in the text area');
+          showToast('No key data found. Please select a file or paste your key.', 'error');
           return;
         }
 
@@ -546,19 +564,19 @@ export default {
 
         // Check if user uploaded public key instead of private key
         if (privateKey && (privateKey.startsWith('ssh-rsa') || privateKey.startsWith('ssh-ed25519') || privateKey.startsWith('ecdsa-'))) {
-          alert('❌ You uploaded a PUBLIC key in the private key field!\n\nPlease:\n1. Upload your PRIVATE key (id_rsa, id_ed25519) in the "Upload from File" field\n2. Upload your PUBLIC key (id_rsa.pub, id_ed25519.pub) in the "Public Key" field');
+          showToast('You uploaded a PUBLIC key in the private key field. Please use your PRIVATE key.', 'error');
           return;
         }
 
         // Validate private key format if provided
         if (privateKey && (!privateKey.includes('BEGIN') || !privateKey.includes('PRIVATE KEY'))) {
-          alert('❌ Invalid private key format.\n\nThe private key must contain:\n- "BEGIN" marker\n- "PRIVATE KEY" text\n\nExample:\n-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----');
+          showToast('Invalid private key format. Key must contain BEGIN/END PRIVATE KEY markers.', 'error');
           return;
         }
 
         // Must have private key
         if (!privateKey) {
-          alert('❌ Private key is required!\n\nPlease upload your PRIVATE key file (id_rsa, id_ed25519, etc.)');
+          showToast('Private key is required. Please upload your private key file.', 'error');
           return;
         }
 
@@ -599,7 +617,7 @@ export default {
 
         await loadKeys();
         cancelUpload();
-        alert('✅ SSH key uploaded successfully!\n\nKey: ' + response.data.name + '\nType: ' + response.data.key_type.toUpperCase());
+        showToast(`SSH key "${response.data.name}" uploaded successfully!`, 'success');
       } catch (error) {
         console.error('❌ Failed to upload key:', error);
         console.error('Error response:', error.response?.data);
@@ -636,7 +654,7 @@ export default {
           errorMsg += '\n\n📝 Please upload or paste your public key (.pub file) in the "Public Key" field.';
         }
 
-        alert('Failed to upload key:\n\n' + errorMsg);
+        showToast('Failed to upload key: ' + (errorMsg.split('\n')[0]), 'error');
       }
     };
 
@@ -662,7 +680,7 @@ export default {
       try {
         // Validate required fields
         if (!generateForm.value.name) {
-          alert('Please enter a name for the SSH key');
+          showToast('Please enter a name for the SSH key', 'error');
           return;
         }
 
@@ -686,7 +704,7 @@ export default {
         cancelGenerate();
       } catch (error) {
         console.error('Failed to generate key:', error);
-        alert('Failed to generate key: ' + error.message);
+        showToast('Failed to generate key: ' + error.message, 'error');
       }
     };
 
@@ -700,7 +718,7 @@ export default {
         await loadKeys();
       } catch (error) {
         console.error('Failed to delete key:', error);
-        alert('Failed to delete key: ' + error.message);
+        showToast('Failed to delete key: ' + error.message, 'error');
       }
     };
 
@@ -719,7 +737,7 @@ export default {
         showKeyModal.value = true;
       } catch (error) {
         console.error('Failed to get public key:', error);
-        alert('Failed to get public key: ' + error.message);
+        showToast('Failed to get public key: ' + error.message, 'error');
       }
     };
 
@@ -757,22 +775,22 @@ export default {
           passphrase: editPassphraseForm.value.passphrase || null
         });
 
-        alert('✅ Passphrase updated successfully!');
         closeEditPassphraseModal();
         await loadKeys();
+        showToast('Passphrase updated successfully!', 'success');
       } catch (error) {
         console.error('Failed to update passphrase:', error);
-        alert('❌ Failed to update passphrase: ' + error.message);
+        showToast('Failed to update passphrase: ' + error.message, 'error');
       }
     };
 
     const copyToClipboard = async (text, label) => {
       try {
         await navigator.clipboard.writeText(text);
-        alert(`${label} copied to clipboard!`);
+        showToast(`${label} copied to clipboard!`, 'success');
       } catch (error) {
         console.error('Failed to copy:', error);
-        alert('Failed to copy to clipboard');
+        showToast('Failed to copy to clipboard', 'error');
       }
     };
 
@@ -1058,6 +1076,8 @@ export default {
     return {
       keys,
       loading,
+      toastMessage,
+      toastType,
       showUploadForm,
       showGenerateForm,
       showKeyModal,
@@ -1160,6 +1180,53 @@ export default {
 
 .btn-close {
   filter: var(--bs-btn-close-white-filter);
+}
+
+/* Toast notification */
+.km-toast {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  animation: toastSlideIn 0.3s ease;
+}
+
+.km-toast.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.km-toast.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.toast-fade-enter-active,
+.toast-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-fade-enter-from,
+.toast-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
 

@@ -100,10 +100,14 @@ class User {
   }
 
   static async update(id, data) {
-    const { username, password, email, two_factor_enabled, two_factor_secret, role, status, last_login } = data;
+    const { name, username, password, email, two_factor_enabled, two_factor_secret, role, status, last_login } = data;
     const updates = [];
     const values = [];
 
+    if (name !== undefined) {
+      updates.push('name = ?');
+      values.push(name);
+    }
     if (username !== undefined) {
       updates.push('username = ?');
       values.push(username);

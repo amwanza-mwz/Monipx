@@ -84,7 +84,7 @@
           </div>
           <div class="stat-info">
             <span class="stat-value">{{ loginCount }}</span>
-            <span class="stat-label">Logins Today</span>
+            <span class="stat-label">Logins</span>
           </div>
         </div>
         <div class="stat-card">
@@ -94,6 +94,15 @@
           <div class="stat-info">
             <span class="stat-value">{{ terminalCount }}</span>
             <span class="stat-label">Terminal Sessions</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon command">
+            <i class="bi bi-code-slash"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ commandCount }}</span>
+            <span class="stat-label">Commands Run</span>
           </div>
         </div>
       </div>
@@ -134,7 +143,7 @@
                 <td>
                   <div class="time-cell">
                     <span class="time">{{ formatTime(log.created_at) }}</span>
-                    <span class="date">{{ formatDate(log.created_at) }}</span>
+                    <span class="date-relative">{{ relativeTime(log.created_at) }}</span>
                   </div>
                 </td>
                 <td>
@@ -148,6 +157,7 @@
                 </td>
                 <td>
                   <span :class="['action-badge', getActionClass(log.action)]">
+                    <i :class="getActionIcon(log.action)" class="me-1"></i>
                     {{ formatAction(log.action) }}
                   </span>
                 </td>
@@ -157,7 +167,11 @@
                   </span>
                 </td>
                 <td>
-                  <span v-if="log.resource_name" class="resource-name">
+                  <div v-if="log.action === 'execute_command' && log.details?.command" class="command-preview" :title="log.details.command">
+                    <i class="bi bi-chevron-right"></i>
+                    <code>{{ truncate(log.details.command, 40) }}</code>
+                  </div>
+                  <span v-else-if="log.resource_name" class="resource-name">
                     {{ log.resource_name }}
                   </span>
                   <span v-else class="text-muted">-</span>
@@ -173,7 +187,7 @@
                     @click="showDetails(log)"
                     title="View details"
                   >
-                    <i class="bi bi-info-circle"></i>
+                    <i class="bi bi-eye"></i>
                   </button>
                 </td>
               </tr>
@@ -243,7 +257,19 @@
             <span class="detail-label">User Agent</span>
             <span class="detail-value small">{{ selectedLog.user_agent }}</span>
           </div>
-          <div class="detail-row" v-if="selectedLog.details">
+          <div class="detail-row" v-if="selectedLog.action === 'execute_command' && selectedLog.details?.command">
+            <span class="detail-label">Command</span>
+            <code class="detail-command">{{ selectedLog.details.command }}</code>
+          </div>
+          <div class="detail-row" v-if="selectedLog.details?.host">
+            <span class="detail-label">Host</span>
+            <span class="detail-value">{{ selectedLog.details.host }}:{{ selectedLog.details.port || 22 }}</span>
+          </div>
+          <div class="detail-row" v-if="selectedLog.details?.sshUsername">
+            <span class="detail-label">SSH User</span>
+            <span class="detail-value">{{ selectedLog.details.sshUsername }}</span>
+          </div>
+          <div class="detail-row" v-if="selectedLog.details && !selectedLog.details.command">
             <span class="detail-label">Details</span>
             <pre class="detail-json">{{ JSON.stringify(selectedLog.details, null, 2) }}</pre>
           </div>
@@ -284,7 +310,10 @@ export default {
       logs.value.filter(l => l.action === 'login').length
     );
     const terminalCount = computed(() =>
-      logs.value.filter(l => l.category === 'terminal').length
+      logs.value.filter(l => l.category === 'terminal' && l.action === 'connect').length
+    );
+    const commandCount = computed(() =>
+      logs.value.filter(l => l.action === 'execute_command').length
     );
 
     async function loadLogs() {
@@ -407,8 +436,42 @@ export default {
       if (action.includes('create') || action.includes('invite')) return 'action-create';
       if (action.includes('delete') || action.includes('disable')) return 'action-delete';
       if (action.includes('update') || action.includes('change')) return 'action-update';
+      if (action.includes('execute_command')) return 'action-command';
       if (action.includes('connect')) return 'action-connect';
+      if (action.includes('disconnect')) return 'action-disconnect';
       return 'action-default';
+    }
+
+    function getActionIcon(action) {
+      if (action === 'login') return 'bi bi-box-arrow-in-right';
+      if (action === 'login_failed') return 'bi bi-x-circle';
+      if (action === 'logout') return 'bi bi-box-arrow-right';
+      if (action === 'connect') return 'bi bi-plug';
+      if (action === 'disconnect') return 'bi bi-plug-fill';
+      if (action === 'execute_command') return 'bi bi-terminal';
+      if (action === 'create') return 'bi bi-plus-circle';
+      if (action === 'update') return 'bi bi-pencil';
+      if (action === 'delete') return 'bi bi-trash';
+      if (action === 'invite') return 'bi bi-person-plus';
+      if (action === 'change_role') return 'bi bi-shield';
+      if (action === 'enable_2fa' || action === 'disable_2fa') return 'bi bi-shield-lock';
+      return 'bi bi-circle';
+    }
+
+    function relativeTime(dateStr) {
+      const now = new Date();
+      const date = new Date(dateStr);
+      const diff = Math.floor((now - date) / 1000);
+      if (diff < 60) return 'just now';
+      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+      if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+      return formatDate(dateStr);
+    }
+
+    function truncate(str, len) {
+      if (!str) return '';
+      return str.length > len ? str.substring(0, len) + '...' : str;
     }
 
     onMounted(() => {
@@ -428,6 +491,7 @@ export default {
       selectedLog,
       loginCount,
       terminalCount,
+      commandCount,
       loadLogs,
       applyDateRange,
       debounceSearch,
@@ -439,6 +503,9 @@ export default {
       formatAction,
       formatCategory,
       getActionClass,
+      getActionIcon,
+      relativeTime,
+      truncate,
     };
   },
 };
@@ -559,6 +626,11 @@ export default {
   color: #7c3aed;
 }
 
+.stat-icon.command {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
 .stat-value {
   font-size: 1.75rem;
   font-weight: 700;
@@ -637,6 +709,12 @@ export default {
   color: var(--text-muted);
 }
 
+.time-cell .date-relative {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 .user-cell {
   display: flex;
   align-items: center;
@@ -688,6 +766,16 @@ export default {
   color: #7c3aed;
 }
 
+.action-disconnect {
+  background: rgba(156, 163, 175, 0.1);
+  color: #9ca3af;
+}
+
+.action-command {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
 .action-default {
   background: rgba(107, 114, 128, 0.1);
   color: #6b7280;
@@ -709,6 +797,34 @@ export default {
 .category-terminal { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
 .category-key { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
 .category-settings { background: rgba(107, 114, 128, 0.1); color: #6b7280; }
+
+.command-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 250px;
+}
+
+.command-preview i {
+  color: #3b82f6;
+  font-size: 0.625rem;
+  flex-shrink: 0;
+}
+
+.command-preview code {
+  font-size: 0.75rem;
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.08);
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.resource-name {
+  font-size: 0.8125rem;
+}
 
 .ip-address {
   font-size: 0.75rem;
@@ -838,6 +954,15 @@ export default {
 
 .detail-value.small {
   font-size: 0.75rem;
+}
+
+.detail-command {
+  background: rgba(59, 130, 246, 0.08);
+  color: #3b82f6;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  word-break: break-all;
 }
 
 .detail-json {

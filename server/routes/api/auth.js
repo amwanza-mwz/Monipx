@@ -123,6 +123,7 @@ router.post('/login', async (req, res) => {
       message: 'Login successful',
       user: {
         id: user.id,
+        name: user.name || '',
         username: user.username,
         email: user.email,
         role: user.role || 'member',
@@ -134,44 +135,66 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Get current user (first admin user for now)
+// Get current user - uses X-User-Id header to identify the logged-in user
 router.get('/me', async (req, res) => {
   try {
-    const users = await User.getAll();
-    const adminUser = users.find(u => u.is_admin === 1) || users[0];
+    const userId = req.headers['x-user-id'];
 
-    if (!adminUser) {
+    let user = null;
+    if (userId) {
+      user = await User.getById(parseInt(userId));
+    }
+
+    // Fallback for backward compatibility (no header sent)
+    if (!user) {
+      const users = await User.getAll();
+      user = users.find(u => u.is_admin === 1) || users[0];
+    }
+
+    if (!user) {
       return res.status(404).json({ error: 'No user found' });
     }
 
-    // Get full user details including name
-    const fullUser = await User.getById(adminUser.id);
+    // Check if user is active
+    if (user.status === 'disabled') {
+      return res.status(403).json({ error: 'Account is disabled' });
+    }
 
     res.json({
-      id: fullUser.id,
-      name: fullUser.name || '',
-      username: fullUser.username,
-      email: fullUser.email || '',
-      is_admin: fullUser.is_admin === 1,
+      id: user.id,
+      name: user.name || '',
+      username: user.username,
+      email: user.email || '',
+      role: user.role || 'member',
+      is_admin: user.is_admin === 1,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Update user
+// Update user - uses X-User-Id header to identify the logged-in user
 router.put('/me', async (req, res) => {
   try {
     const { name, username, password, email } = req.body;
+    const userId = req.headers['x-user-id'];
 
-    const users = await User.getAll();
-    const adminUser = users.find(u => u.is_admin === 1) || users[0];
+    let user = null;
+    if (userId) {
+      user = await User.getById(parseInt(userId));
+    }
 
-    if (!adminUser) {
+    // Fallback for backward compatibility
+    if (!user) {
+      const users = await User.getAll();
+      user = users.find(u => u.is_admin === 1) || users[0];
+    }
+
+    if (!user) {
       return res.status(404).json({ error: 'No user found' });
     }
 
-    const updatedUser = await User.update(adminUser.id, {
+    const updatedUser = await User.update(user.id, {
       name,
       username,
       password,
@@ -185,6 +208,7 @@ router.put('/me', async (req, res) => {
         name: updatedUser.name || '',
         username: updatedUser.username,
         email: updatedUser.email,
+        role: updatedUser.role || 'member',
         is_admin: updatedUser.is_admin === 1,
       },
     });
@@ -214,7 +238,7 @@ setInterval(() => {
 // Get 2FA status
 router.get('/2fa/status', async (req, res) => {
   try {
-    const userId = 1; // Default to user 1 for now (admin)
+    const userId = parseInt(req.headers['x-user-id']) || 1;
     const user = await User.getById(userId);
 
     console.log('📊 2FA Status check:', { userId, enabled: user?.two_factor_enabled === 1 });
@@ -231,7 +255,7 @@ router.get('/2fa/status', async (req, res) => {
 // Setup 2FA - Generate secret and QR code
 router.post('/2fa/setup', async (req, res) => {
   try {
-    const userId = 1; // Default to user 1 for now (admin)
+    const userId = parseInt(req.headers['x-user-id']) || 1;
     const user = await User.getById(userId);
 
     if (!user) {
@@ -276,7 +300,7 @@ router.post('/2fa/setup', async (req, res) => {
 router.post('/2fa/verify', async (req, res) => {
   try {
     const { token } = req.body;
-    const userId = 1; // Default to user 1 for now (admin)
+    const userId = parseInt(req.headers['x-user-id']) || 1;
 
     console.log('🔍 Verifying 2FA token for user:', userId);
 
@@ -327,7 +351,7 @@ router.post('/2fa/verify', async (req, res) => {
 // Disable 2FA
 router.post('/2fa/disable', async (req, res) => {
   try {
-    const userId = 1; // Default to user 1 for now (admin)
+    const userId = parseInt(req.headers['x-user-id']) || 1;
 
     console.log('🔓 Disabling 2FA for user:', userId);
 

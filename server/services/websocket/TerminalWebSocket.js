@@ -5,6 +5,7 @@ const ActivityLog = require('../../models/ActivityLog');
 class TerminalWebSocket {
   constructor(io) {
     this.io = io;
+    this.commandBuffers = new Map(); // sessionId -> { buffer, userId, username }
     this.setupHandlers();
   }
 
@@ -75,6 +76,9 @@ class TerminalWebSocket {
             console.warn('Failed to log terminal connection activity:', logError.message);
           }
 
+          // Initialize command buffer for this session with user info
+          this.commandBuffers.set(sessionId, { buffer: '', userId: userId || null, username: username || 'unknown' });
+
           // Send success response
           socket.emit('terminal:connected', {
             sessionId,
@@ -96,10 +100,45 @@ class TerminalWebSocket {
         }
       });
 
-      // Handle terminal input (user typing)
+      // Handle terminal input (user typing) - with command tracking
       socket.on('terminal:input', (data) => {
         const { sessionId, input } = data;
         TerminalSession.sendData(sessionId, input);
+
+        // Track commands: buffer input and log when Enter is pressed
+        if (!this.commandBuffers.has(sessionId)) {
+          this.commandBuffers.set(sessionId, { buffer: '', userId: null, username: 'unknown' });
+        }
+        const cmdBuf = this.commandBuffers.get(sessionId);
+
+        // Check for Enter key (carriage return)
+        if (input === '\r' || input === '\n') {
+          const command = cmdBuf.buffer.trim();
+          if (command.length > 0 && command.length <= 500) {
+            // Log the command as activity
+            const session = TerminalSession.getSession(sessionId);
+            const sshSessionId = session?.sshSessionId;
+            ActivityLog.log({
+              userId: cmdBuf.userId || null,
+              username: cmdBuf.username || 'unknown',
+              action: 'execute_command',
+              category: ActivityLog.CATEGORIES.TERMINAL,
+              resourceType: 'server',
+              resourceId: sshSessionId,
+              details: { command, sessionId },
+            }).catch(() => {}); // Non-blocking
+          }
+          cmdBuf.buffer = '';
+        } else if (input === '\x7f' || input === '\b') {
+          // Backspace - remove last character
+          cmdBuf.buffer = cmdBuf.buffer.slice(0, -1);
+        } else if (input.length === 1 && input.charCodeAt(0) >= 32) {
+          // Only buffer printable characters
+          cmdBuf.buffer += input;
+        } else if (input.length > 1 && !input.includes('\x1b')) {
+          // Pasted text (multi-char, no escape sequences)
+          cmdBuf.buffer += input;
+        }
       });
 
       // Handle terminal resize
@@ -127,6 +166,7 @@ class TerminalWebSocket {
         }
 
         TerminalSession.closeSession(sessionId);
+        this.commandBuffers.delete(sessionId);
 
         // Log terminal disconnect activity
         try {
@@ -162,6 +202,7 @@ class TerminalWebSocket {
           if (session && session.socket.id === socket.id) {
             console.log(`🔌 Closing orphaned session: ${sessionId}`);
             TerminalSession.closeSession(sessionId);
+            this.commandBuffers.delete(sessionId);
           }
         }
       });

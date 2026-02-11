@@ -54,13 +54,20 @@
     <div class="sidebar-footer">
       <div class="user-dropdown" :class="{ 'dropdown-open': showUserDropdown }">
         <button class="user-menu-button" @click="toggleUserDropdown" v-if="currentUser">
-          <div class="nav-icon">
-            <i class="bi bi-person-circle"></i>
+          <div class="user-avatar">
+            {{ getUserInitials }}
           </div>
-          <span v-if="!isCollapsed" class="nav-text">{{ currentUser.username || 'User' }}</span>
+          <div v-if="!isCollapsed" class="user-info">
+            <span class="user-display-name">{{ currentUser.name || currentUser.username || 'User' }}</span>
+            <span class="user-role-label">{{ currentUser.role || 'member' }}</span>
+          </div>
           <i v-if="!isCollapsed" class="bi bi-chevron-down ms-auto dropdown-arrow"></i>
         </button>
         <div class="user-dropdown-menu" v-if="showUserDropdown && !isCollapsed">
+          <div class="dropdown-user-info">
+            <span class="dropdown-username">{{ currentUser.username }}</span>
+            <span class="dropdown-email">{{ currentUser.email || '' }}</span>
+          </div>
           <router-link to="/settings" class="dropdown-item" @click="showUserDropdown = false">
             <i class="bi bi-gear me-2"></i>Settings
           </router-link>
@@ -88,6 +95,16 @@ export default {
     const isCollapsed = ref(localStorage.getItem('sidebarCollapsed') === 'true');
     const currentUser = ref(null);
     const showUserDropdown = ref(false);
+
+    const getUserInitials = computed(() => {
+      if (!currentUser.value) return '?';
+      const name = currentUser.value.name || currentUser.value.username || '';
+      const parts = name.trim().split(/\s+/);
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      }
+      return name.substring(0, 2).toUpperCase() || '?';
+    });
 
     async function loadUser() {
       try {
@@ -148,6 +165,7 @@ export default {
       theme,
       currentUser,
       showUserDropdown,
+      getUserInitials,
       toggleCollapse,
       toggleUserDropdown,
       handleLogout,
@@ -163,15 +181,21 @@ export default {
   left: 0;
   top: 0;
   height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile browsers */
   width: 250px;
   background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
+  -webkit-transition: width 0.3s ease;
   transition: width 0.3s ease;
-  z-index: 1000;
+  z-index: 1050;
+  display: -webkit-flex;
   display: flex;
+  -webkit-flex-direction: column;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+  -webkit-overflow-scrolling: touch;
 }
 
 .sidebar.collapsed {
@@ -343,18 +367,56 @@ export default {
   position: relative;
 }
 
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ff2667 0%, #e01e57 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+
+.user-display-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #e6e8eb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-role-label {
+  font-size: 0.7rem;
+  color: #8b949e;
+  text-transform: capitalize;
+}
+
 .user-menu-button {
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 0.875rem 1rem;
+  padding: 0.75rem 0.875rem;
   background: #161b22;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   color: #c9d1d9;
   cursor: pointer;
   transition: all 0.3s ease;
-  gap: 1rem;
+  gap: 0.75rem;
   text-align: left;
 }
 
@@ -363,7 +425,6 @@ export default {
   border-color: #ff2667;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(255, 38, 103, 0.2);
-  color: #ff2667;
 }
 
 .dropdown-arrow {
@@ -387,6 +448,24 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   z-index: 1000;
+}
+
+.dropdown-user-info {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-username {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e6e8eb;
+}
+
+.dropdown-email {
+  font-size: 0.75rem;
+  color: #8b949e;
 }
 
 .dropdown-item {
@@ -418,10 +497,10 @@ export default {
 
 .sidebar.collapsed .user-menu-button {
   justify-content: center;
-  padding: 0.875rem;
+  padding: 0.75rem;
 }
 
-.sidebar.collapsed .user-menu-button .nav-text,
+.sidebar.collapsed .user-info,
 .sidebar.collapsed .user-menu-button .dropdown-arrow {
   display: none;
 }

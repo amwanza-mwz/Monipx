@@ -234,8 +234,17 @@ body {
   box-shadow: 0 4px 12px rgba(255, 38, 103, 0.2);
 }
 
-/* Smooth transitions */
-* {
+/* Smooth transitions - only on elements that need them, not all (*) for better performance */
+body,
+.card,
+.btn,
+.form-control,
+.form-select,
+.table,
+.modal-content,
+.alert,
+.badge,
+.nav-link {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -505,5 +514,108 @@ body {
 [data-theme='dark'] .current-time,
 [data-theme='dark'] .server-time {
   color: var(--text-primary) !important;
+}
+
+/* ========================================
+   Dark/Light Mode - Comprehensive Fixes
+   ======================================== */
+
+/* Ensure dropdown menus respect theme */
+[data-theme='dark'] .dropdown-menu {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme='dark'] .dropdown-item {
+  color: var(--text-primary) !important;
+}
+
+[data-theme='dark'] .dropdown-item:hover {
+  background-color: rgba(255, 38, 103, 0.15) !important;
+}
+
+/* Fix list-group in dark mode */
+[data-theme='dark'] .list-group-item {
+  background-color: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Fix nav-tabs in dark mode */
+[data-theme='dark'] .nav-tabs {
+  border-bottom-color: var(--border-color) !important;
+}
+
+[data-theme='dark'] .nav-tabs .nav-link {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme='dark'] .nav-tabs .nav-link.active {
+  background-color: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+  color: var(--primary) !important;
+}
+
+/* Fix pagination in dark mode */
+[data-theme='dark'] .page-link {
+  background-color: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme='dark'] .page-item.active .page-link {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: white !important;
+}
+
+/* Fix toast/notifications in dark mode */
+[data-theme='dark'] .toast {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Ensure inputs have proper contrast in light mode too */
+.form-control::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+/* Fix close button visibility */
+[data-theme='light'] .btn-close {
+  filter: none;
+}
+
+[data-theme='dark'] .btn-close {
+  filter: brightness(0) invert(1);
+  opacity: 0.8;
+}
+
+/* Sidebar z-index hierarchy for proper stacking */
+.sidebar { z-index: 1050; }
+.topbar { z-index: 1040; }
+.modal { z-index: 1060; }
+.modal-backdrop { z-index: 1055; }
+
+/* Responsive sidebar fix for smaller screens */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 250px;
+    transform: translateX(0);
+  }
+
+  .sidebar.collapsed {
+    width: 0;
+    transform: translateX(-250px);
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+  }
+
+  .topbar {
+    left: 0 !important;
+  }
 }
 

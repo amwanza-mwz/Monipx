@@ -87,10 +87,13 @@ export default {
       // Validate authentication on app load
       const storedAuth = localStorage.getItem('isAuthenticated') === 'true';
       if (storedAuth) {
+        // Show layout immediately using localStorage data, validate in background
+        isAuthValid.value = true;
+        authChecked.value = true;
+
+        // Validate session with server in background
         try {
-          // Verify session is still valid with server
           await api.get('/auth/me');
-          isAuthValid.value = true;
         } catch (error) {
           console.error('Session invalid, logging out:', error);
           // Clear auth state and redirect to login
@@ -103,12 +106,12 @@ export default {
         }
       } else {
         isAuthValid.value = false;
+        authChecked.value = true;
         // Redirect to login if not on auth pages
         if (route.path !== '/login' && route.path !== '/setup') {
           router.push('/login');
         }
       }
-      authChecked.value = true;
 
       // Ensure theme is applied immediately
       const currentTheme = themeStore.theme;

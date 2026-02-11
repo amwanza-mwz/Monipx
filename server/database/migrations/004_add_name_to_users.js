@@ -1,38 +1,20 @@
-/**
- * Migration: Add name field to users table
- * Date: 2026-01-02
- */
+const db = require('../db');
 
-module.exports = {
-  up: async (db) => {
-    console.log('Running migration: Add name field to users table');
+async function runMigration() {
+  console.log('Running migration: 004_add_name_to_users');
 
-    // Check if name column already exists
-    const tableInfo = await db.all("PRAGMA table_info(users)");
-    const hasNameColumn = tableInfo.some(col => col.name === 'name');
-
-    if (!hasNameColumn) {
-      // Add name column to users table
-      await db.exec(`
-        ALTER TABLE users ADD COLUMN name TEXT;
-      `);
-      console.log('✅ Added name column to users table');
-    } else {
-      console.log('ℹ️  Name column already exists in users table');
-    }
-  },
-
-  down: async (db) => {
-    console.log('Rolling back migration: Add name field to users table');
-    
-    // SQLite doesn't support DROP COLUMN directly, so we need to recreate the table
+  try {
     await db.exec(`
-      CREATE TABLE users_backup AS SELECT id, username, password_hash, email, is_admin, two_factor_enabled, two_factor_secret, created_at, updated_at FROM users;
-      DROP TABLE users;
-      ALTER TABLE users_backup RENAME TO users;
-    `);
-    
-    console.log('✅ Removed name column from users table');
-  }
-};
+      ALTER TABLE users ADD COLUMN name TEXT;
+    `).catch(() => {
+      console.log('Column name already exists, skipping...');
+    });
 
+    console.log('✅ Migration 004_add_name_to_users completed');
+  } catch (error) {
+    console.error('❌ Migration failed:', error);
+    throw error;
+  }
+}
+
+module.exports = { runMigration };

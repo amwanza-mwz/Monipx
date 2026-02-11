@@ -43,30 +43,30 @@ export default {
       'status-error': status.value === 'error',
     }));
 
-    // Modern dark terminal theme with improved selection visibility
+    // Modern dark terminal theme with improved selection and color visibility
     const getTerminalTheme = () => {
       return {
         background: '#0d1117',
-        foreground: '#c9d1d9',
+        foreground: '#d1d5db',
         cursor: '#58a6ff',
         cursorAccent: '#0d1117',
-        // Use transparent selection so text remains visible
-        selectionBackground: 'rgba(255, 255, 255, 0.25)',
+        selectionBackground: 'rgba(83, 189, 250, 0.3)',
+        selectionForeground: '#ffffff',
         black: '#0d1117',
         red: '#ff7b72',
         green: '#7ee787',
-        yellow: '#d29922',
+        yellow: '#e3b341',
         blue: '#58a6ff',
         magenta: '#bc8cff',
-        cyan: '#39c5cf',
-        white: '#b1bac4',
-        brightBlack: '#6e7681',
+        cyan: '#56d4dd',
+        white: '#d1d5db',
+        brightBlack: '#8b949e',
         brightRed: '#ffa198',
         brightGreen: '#9be9a8',
-        brightYellow: '#e3b341',
+        brightYellow: '#f0d96c',
         brightBlue: '#79c0ff',
         brightMagenta: '#d2a8ff',
-        brightCyan: '#56d4dd',
+        brightCyan: '#76e4f0',
         brightWhite: '#ffffff',
       };
     };

@@ -10,9 +10,20 @@ const api = axios.create({
 
 console.log('API Base URL:', import.meta.env.VITE_API_URL || '/api');
 
-// Request interceptor
+// Request interceptor - attach user ID for proper session identification
 api.interceptors.request.use(
   (config) => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user && user.id) {
+          config.headers['X-User-Id'] = user.id;
+        }
+      } catch (e) {
+        // ignore parse errors
+      }
+    }
     return config;
   },
   (error) => {

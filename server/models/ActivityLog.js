@@ -40,6 +40,7 @@ const ACTIONS = {
   // Terminal
   CONNECT: 'connect',
   DISCONNECT: 'disconnect',
+  EXECUTE_COMMAND: 'execute_command',
 
   // General
   VIEW: 'view',

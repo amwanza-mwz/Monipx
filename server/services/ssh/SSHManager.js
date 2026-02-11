@@ -18,56 +18,26 @@ class SSHManager {
    */
   async connect(sessionId, passphrase = null) {
     try {
-      console.log(`\n${'═'.repeat(80)}`);
-      console.log(`🔌 SSHManager.connect()`);
-      console.log(`${'═'.repeat(80)}`);
-      console.log(`   Input sessionId: ${sessionId} (type: ${typeof sessionId})`);
-
       // Ensure sessionId is a number (fix for production string/number mismatch)
       const numericSessionId = parseInt(sessionId, 10);
       if (isNaN(numericSessionId)) {
         throw new Error(`Invalid session ID: ${sessionId}`);
       }
 
-      console.log(`   Numeric sessionId: ${numericSessionId}`);
-      console.log(`${'═'.repeat(80)}\n`);
-
       // Get session details with decrypted password if using password auth
-      console.log(`🔍 Looking up SSH session in database...`);
       const session = await SSHSession.getForConnection(numericSessionId);
 
       if (!session) {
-        // Additional debugging - check if session exists at all
-        const allSessions = await SSHSession.getAll();
-        console.error(`\n${'!'.repeat(80)}`);
-        console.error(`❌ SSH SESSION NOT FOUND`);
-        console.error(`${'!'.repeat(80)}`);
-        console.error(`   Requested ID: ${numericSessionId}`);
-        console.error(`   Total sessions in database: ${allSessions.length}`);
-        console.error(`   Available session IDs: ${allSessions.map(s => s.id).join(', ')}`);
-        console.error(`   Available sessions:`);
-        allSessions.forEach(s => {
-          console.error(`      - ID ${s.id}: ${s.name} @ ${s.host}`);
-        });
-        console.error(`${'!'.repeat(80)}\n`);
         throw new Error(`SSH session not found (ID: ${numericSessionId})`);
       }
 
-      console.log(`✅ Session found in database:`);
-      console.log(`   ID: ${session.id}`);
-      console.log(`   Name: ${session.name}`);
-      console.log(`   Host: ${session.host}:${session.port}`);
-      console.log(`   Username: ${session.username}`);
-      console.log(`   Auth Method: ${session.auth_method}`);
-      console.log(`\n🔌 Connecting to ${session.username}@${session.host}:${session.port}...`);
+      console.log(`🔌 Connecting to ${session.username}@${session.host}:${session.port} (${session.auth_method})`);
 
       // Get SSH key if using key authentication
       let privateKey = null;
       let keyPassphrase = passphrase; // Use provided passphrase or get from DB
 
       if (session.auth_method === 'key' && session.ssh_key_id) {
-        console.log(`🔑 Loading SSH key ID: ${session.ssh_key_id}`);
-
         // Get full key details including encrypted passphrase
         const keyDetails = await SSHKey.getById(session.ssh_key_id);
         if (!keyDetails || !keyDetails.encrypted_private_key) {
@@ -75,39 +45,28 @@ class SSHManager {
         }
 
         // Decrypt the private key
-        console.log('🔓 Decrypting private key...');
         privateKey = KeyEncryption.decrypt(keyDetails.encrypted_private_key);
 
         // If no passphrase provided but key has one stored, decrypt it
         if (!keyPassphrase && keyDetails.encrypted_passphrase) {
-          console.log('🔓 Decrypting stored passphrase...');
           keyPassphrase = KeyEncryption.decrypt(keyDetails.encrypted_passphrase);
-          console.log('✅ Passphrase decrypted from storage');
         }
 
         // Validate and convert key format
-        console.log('🔍 Validating key format...');
         const validation = SSHKeyConverter.validatePrivateKey(privateKey, keyPassphrase);
-        console.log(`📋 Key validation:`, validation);
 
         if (!validation.valid && validation.errors.length > 0) {
-          // Check if it's just a warning about special handling
           const hasOnlyWarnings = validation.errors.every(err =>
             err.includes('may require special handling')
           );
 
           if (!hasOnlyWarnings) {
-            console.error('❌ Invalid SSH key:', validation.errors.join(', '));
             throw new Error(`Invalid SSH key: ${validation.errors[0]}`);
-          } else {
-            console.log('⚠️  Key validation warnings (will attempt connection anyway):', validation.errors);
           }
         }
 
         // Convert key to compatible format
-        console.log('🔄 Converting key format...');
         privateKey = SSHKeyConverter.convertPrivateKey(privateKey, keyPassphrase);
-        console.log('✅ Key ready for connection');
       }
 
       // Create SSH client
@@ -124,7 +83,7 @@ class SSHManager {
         username: session.username,
         keepaliveInterval: (session.keep_alive || 30) * 1000,
         keepaliveCountMax: 3,
-        readyTimeout: 15000, // Reduced from 30s to 15s for faster timeout
+        readyTimeout: 30000, // 30s timeout for network devices (switches can be slow to negotiate)
         // Optimized algorithm order - fastest/modern first, legacy last
         algorithms: {
           kex: [
@@ -145,13 +104,11 @@ class SSHManager {
             // Fast GCM ciphers first (hardware accelerated)
             'aes128-gcm@openssh.com',
             'aes256-gcm@openssh.com',
-            'aes128-gcm',
-            'aes256-gcm',
-            // CTR mode (fast)
+            // CTR mode (fast, widely supported)
             'aes128-ctr',
             'aes192-ctr',
             'aes256-ctr',
-            // CBC mode fallback for legacy
+            // CBC mode fallback for legacy network devices
             'aes128-cbc',
             'aes192-cbc',
             'aes256-cbc',
@@ -181,30 +138,19 @@ class SSHManager {
 
       // Add authentication method
       if (session.auth_method === 'key' && privateKey) {
-        console.log('🔐 Using SSH key authentication');
         config.privateKey = privateKey;
         if (keyPassphrase) {
-          console.log('🔑 Using passphrase for encrypted key');
           config.passphrase = keyPassphrase;
         }
-
-        // Add debug mode for troubleshooting
-        config.debug = (msg) => {
-          if (msg.includes('error') || msg.includes('fail')) {
-            console.error('🐛 SSH Debug:', msg);
-          }
-        };
-
       } else if (session.auth_method === 'password') {
-        console.log('🔐 Using password authentication');
-
         // Password should already be decrypted by getForConnection()
         if (!session.decrypted_password) {
           throw new Error('Password not found for this session');
         }
 
         config.password = session.decrypted_password;
-        console.log('✅ Password ready for connection');
+        // Enable keyboard-interactive auth for network devices (Cisco, HP, Aruba, etc.)
+        config.tryKeyboard = true;
       } else {
         throw new Error('No authentication method configured');
       }
@@ -221,18 +167,25 @@ class SSHManager {
 
       // Return promise that resolves when connected
       return new Promise((resolve, reject) => {
+        let resolved = false;
+
         client.on('ready', () => {
+          if (resolved) return;
+          resolved = true;
           console.log(`✅ SSH connection established: ${connectionId}`);
           resolve({ connectionId, client });
         });
 
+        // Handle keyboard-interactive auth (required by many network switches)
+        client.on('keyboard-interactive', (name, instructions, lang, prompts, finish) => {
+          const responses = prompts.map(() => config.password || '');
+          finish(responses);
+        });
+
         client.on('error', (err) => {
-          console.error(`❌ SSH connection error:`, err.message);
-          console.error(`📋 Error details:`, {
-            level: err.level,
-            description: err.description,
-            message: err.message
-          });
+          if (resolved) return;
+          resolved = true;
+          console.error(`❌ SSH connection error for ${session.host}:`, err.message);
 
           // Provide helpful error messages
           let userMessage = err.message;
@@ -269,6 +222,12 @@ class SSHManager {
             SSHConnectionLog.updateStats(conn.logId, conn.bytesSent, conn.bytesReceived);
           }
           this.activeConnections.delete(connectionId);
+
+          // If connection closed before ready, reject the promise
+          if (!resolved) {
+            resolved = true;
+            reject(new Error(`Connection to ${session.host}:${session.port} closed unexpectedly. The device may have rejected the connection.`));
+          }
         });
 
         // Connect

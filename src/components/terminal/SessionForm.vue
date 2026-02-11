@@ -154,28 +154,29 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="$emit('close')">Cancel</button>
-            <button
-              type="button"
-              class="btn btn-info"
-              @click="testConnection"
-              :disabled="testingConnection || !canTestConnection"
-            >
-              <i class="bi" :class="testingConnection ? 'bi-hourglass-split' : 'bi-wifi'"></i>
-              {{ testingConnection ? 'Testing...' : 'Test Connection' }}
-            </button>
-            <button type="submit" class="btn btn-primary">
-              <i class="bi" :class="session ? 'bi-check-lg' : 'bi-plus-lg'"></i>
-              {{ session ? 'Update Session' : 'Create Session' }}
-            </button>
+            <!-- Test Connection Result -->
+            <div v-if="testResult" class="test-result" :class="testResult.success ? 'success' : 'error'">
+              <i class="bi" :class="testResult.success ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+              <span>{{ testResult.message }}</span>
+            </div>
+            <div class="footer-buttons">
+              <button type="button" class="btn btn-secondary" @click="$emit('close')">Cancel</button>
+              <button
+                type="button"
+                class="btn btn-info"
+                @click="testConnection"
+                :disabled="testingConnection || !canTestConnection"
+              >
+                <i class="bi" :class="testingConnection ? 'bi-hourglass-split' : 'bi-wifi'"></i>
+                {{ testingConnection ? 'Testing...' : 'Test Connection' }}
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi" :class="session ? 'bi-check-lg' : 'bi-plus-lg'"></i>
+                {{ session ? 'Update Session' : 'Create Session' }}
+              </button>
+            </div>
           </div>
         </form>
-
-        <!-- Test Connection Result -->
-        <div v-if="testResult" class="test-result" :class="testResult.success ? 'success' : 'error'">
-          <i class="bi" :class="testResult.success ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
-          <span>{{ testResult.message }}</span>
-        </div>
       </div>
     </div>
 
@@ -504,6 +505,16 @@ export default {
   padding: 1.25rem 1.5rem;
   background: var(--bg-secondary);
   border-radius: 0 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.footer-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  width: 100%;
 }
 
 /* Form Sections */
@@ -725,45 +736,41 @@ export default {
 
 /* Test Result */
 .test-result {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-bottom: 1rem;
+  width: 100%;
   padding: 0.75rem 1.25rem;
   border-radius: 8px;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-weight: 500;
-  animation: slideDown 0.3s ease-out;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  z-index: 10;
-  white-space: nowrap;
+  font-size: 0.875rem;
+  animation: slideIn 0.3s ease-out;
 }
 
 .test-result.success {
-  background: #28a745;
-  color: white;
+  background: rgba(40, 167, 69, 0.12);
+  color: #28a745;
+  border: 1px solid rgba(40, 167, 69, 0.25);
 }
 
 .test-result.error {
-  background: #dc3545;
-  color: white;
+  background: rgba(220, 53, 69, 0.12);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.25);
 }
 
 .test-result i {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
 }
 
-@keyframes slideDown {
+@keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(-10px);
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
   }
 }
 

@@ -31,6 +31,57 @@
 
       <!-- Settings Content -->
       <div class="settings-content">
+        <!-- Profile Section -->
+        <div v-show="activeSection === 'profile'" class="settings-section">
+          <h2 class="section-title">{{ $t('settings.sections.profile') }}</h2>
+
+          <div class="setting-group">
+            <h3 class="setting-label">{{ $t('settings.security.account') }}</h3>
+            <div v-if="loadingUser" class="text-center py-4">
+              <div class="spinner-border text-primary"></div>
+            </div>
+            <form v-else @submit.prevent="updateUser" class="account-form">
+              <div class="form-group">
+                <label>
+                  <i class="bi bi-person-badge me-2"></i>Full Name
+                </label>
+                <input type="text" class="form-control" v-model="userForm.name" placeholder="Enter your full name" />
+              </div>
+              <div class="form-group">
+                <label>
+                  <i class="bi bi-person me-2"></i>{{ $t('settings.security.username') }}
+                </label>
+                <input type="text" class="form-control" v-model="userForm.username" required />
+              </div>
+              <div class="form-group">
+                <label>
+                  <i class="bi bi-envelope me-2"></i>{{ $t('settings.security.email') }}
+                </label>
+                <input type="email" class="form-control" v-model="userForm.email" />
+              </div>
+              <div class="form-group">
+                <label>
+                  <i class="bi bi-lock me-2"></i>{{ $t('settings.security.newPassword') }}
+                </label>
+                <input type="password" class="form-control" v-model="userForm.password" placeholder="Leave blank to keep current" />
+              </div>
+              <div class="profile-role-badge" v-if="userForm.role">
+                <span class="badge" :class="userForm.role === 'admin' ? 'bg-danger' : userForm.role === 'manager' ? 'bg-primary' : 'bg-secondary'">
+                  {{ userForm.role.charAt(0).toUpperCase() + userForm.role.slice(1) }}
+                </span>
+              </div>
+              <button type="submit" class="btn btn-primary" :disabled="savingUser">
+                <span v-if="savingUser" class="spinner-border spinner-border-sm me-2"></span>
+                {{ $t('settings.security.saveChanges') }}
+              </button>
+              <div v-if="saveMessage" class="save-toast" :class="saveMessageType">
+                <i :class="saveMessageType === 'success' ? 'bi bi-check-circle-fill' : 'bi bi-exclamation-circle-fill'" class="me-2"></i>
+                {{ saveMessage }}
+              </div>
+            </form>
+          </div>
+        </div>
+
         <!-- General Section -->
         <div v-show="activeSection === 'general'" class="settings-section">
           <h2 class="section-title">{{ $t('settings.sections.general') }}</h2>
@@ -97,38 +148,6 @@
         <!-- Security Section -->
         <div v-show="activeSection === 'security'" class="settings-section">
           <h2 class="section-title">{{ $t('settings.sections.security') }}</h2>
-          
-          <!-- User Account -->
-          <div class="setting-group">
-            <h3 class="setting-label">{{ $t('settings.security.account') }}</h3>
-            <div v-if="loadingUser" class="text-center py-4">
-              <div class="spinner-border text-primary"></div>
-            </div>
-            <form v-else @submit.prevent="updateUser" class="account-form">
-              <div class="form-group">
-                <label>
-                  <i class="bi bi-person me-2"></i>{{ $t('settings.security.username') }}
-                </label>
-                <input type="text" class="form-control" v-model="userForm.username" required />
-              </div>
-              <div class="form-group">
-                <label>
-                  <i class="bi bi-envelope me-2"></i>{{ $t('settings.security.email') }}
-                </label>
-                <input type="email" class="form-control" v-model="userForm.email" />
-              </div>
-              <div class="form-group">
-                <label>
-                  <i class="bi bi-lock me-2"></i>{{ $t('settings.security.newPassword') }}
-                </label>
-                <input type="password" class="form-control" v-model="userForm.password" placeholder="Leave blank to keep current" />
-              </div>
-              <button type="submit" class="btn btn-primary" :disabled="savingUser">
-                <span v-if="savingUser" class="spinner-border spinner-border-sm me-2"></span>
-                {{ $t('settings.security.saveChanges') }}
-              </button>
-            </form>
-          </div>
 
           <!-- Two Factor Authentication -->
           <div class="setting-group">
@@ -307,10 +326,11 @@ export default {
     });
 
     // Active section
-    const activeSection = ref('general');
+    const activeSection = ref('profile');
 
     // Sections
     const sections = ref([
+      { id: 'profile', icon: 'bi-person-circle' },
       { id: 'general', icon: 'bi-sliders' },
       { id: 'appearance', icon: 'bi-palette' },
       { id: 'security', icon: 'bi-shield-lock' },
@@ -319,12 +339,24 @@ export default {
 
     // User form
     const userForm = ref({
+      name: '',
       username: '',
       email: '',
       password: '',
+      role: '',
     });
     const loadingUser = ref(true);
     const savingUser = ref(false);
+    const saveMessage = ref('');
+    const saveMessageType = ref('success');
+    let saveMessageTimer = null;
+
+    function showSaveMessage(msg, type = 'success') {
+      saveMessage.value = msg;
+      saveMessageType.value = type;
+      if (saveMessageTimer) clearTimeout(saveMessageTimer);
+      saveMessageTimer = setTimeout(() => { saveMessage.value = ''; }, 4000);
+    }
 
     // Timezone
     const selectedTimezone = ref('UTC');
@@ -350,8 +382,10 @@ export default {
       try {
         loadingUser.value = true;
         const response = await api.get('/auth/me');
+        userForm.value.name = response.data.name || '';
         userForm.value.username = response.data.username;
         userForm.value.email = response.data.email || '';
+        userForm.value.role = response.data.role || '';
       } catch (error) {
         console.error('Failed to load user:', error);
       } finally {
@@ -363,26 +397,31 @@ export default {
       try {
         savingUser.value = true;
         const updateData = {
+          name: userForm.value.name,
           username: userForm.value.username,
           email: userForm.value.email,
         };
 
         if (userForm.value.password) {
           if (userForm.value.password.length < 6) {
-            alert('Password must be at least 6 characters');
+            showSaveMessage('Password must be at least 6 characters', 'error');
             savingUser.value = false;
             return;
           }
           updateData.password = userForm.value.password;
         }
 
-        await api.put('/auth/me', updateData);
-        alert('User updated successfully!');
+        const response = await api.put('/auth/me', updateData);
+        // Update localStorage so sidebar and other components pick up the changes
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const updatedUser = { ...storedUser, ...response.data.user };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        showSaveMessage('Profile updated successfully!', 'success');
         userForm.value.password = '';
         await loadUser();
       } catch (error) {
         console.error('Failed to update user:', error);
-        alert(error.response?.data?.error || 'Failed to update user');
+        showSaveMessage(error.response?.data?.error || 'Failed to update profile', 'error');
       } finally {
         savingUser.value = false;
       }
@@ -511,6 +550,8 @@ export default {
       userForm,
       loadingUser,
       savingUser,
+      saveMessage,
+      saveMessageType,
       selectedTimezone,
       currentServerTime,
       twoFactorEnabled,
@@ -766,6 +807,43 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.save-toast {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  animation: slideIn 0.3s ease;
+}
+
+.save-toast.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.save-toast.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.profile-role-badge {
+  padding: 0.25rem 0;
+}
+
+.profile-role-badge .badge {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
 }
 
 .form-group {

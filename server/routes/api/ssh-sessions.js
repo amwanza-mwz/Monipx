@@ -170,12 +170,55 @@ router.post('/test-connection', async (req, res) => {
     // Create SSH client
     const client = new Client();
 
-    // Connection configuration
+    // Connection configuration with full algorithm support for network devices
     const config = {
       host,
       port: port || 22,
       username,
-      readyTimeout: 10000, // 10 second timeout for testing
+      readyTimeout: 20000, // 20 second timeout for testing (switches can be slow)
+      // Full algorithm list to support legacy network devices (Cisco, HP, Juniper, etc.)
+      algorithms: {
+        kex: [
+          'curve25519-sha256',
+          'curve25519-sha256@libssh.org',
+          'ecdh-sha2-nistp256',
+          'ecdh-sha2-nistp384',
+          'ecdh-sha2-nistp521',
+          'diffie-hellman-group14-sha256',
+          'diffie-hellman-group-exchange-sha256',
+          'diffie-hellman-group14-sha1',
+          'diffie-hellman-group-exchange-sha1',
+          'diffie-hellman-group1-sha1'
+        ],
+        cipher: [
+          'aes128-gcm@openssh.com',
+          'aes256-gcm@openssh.com',
+          'aes128-ctr',
+          'aes192-ctr',
+          'aes256-ctr',
+          'aes128-cbc',
+          'aes192-cbc',
+          'aes256-cbc',
+          '3des-cbc'
+        ],
+        serverHostKey: [
+          'ssh-ed25519',
+          'ecdsa-sha2-nistp256',
+          'ecdsa-sha2-nistp384',
+          'ecdsa-sha2-nistp521',
+          'rsa-sha2-512',
+          'rsa-sha2-256',
+          'ssh-rsa'
+        ],
+        hmac: [
+          'hmac-sha2-256-etm@openssh.com',
+          'hmac-sha2-512-etm@openssh.com',
+          'hmac-sha2-256',
+          'hmac-sha2-512',
+          'hmac-sha1',
+          'hmac-md5'
+        ]
+      }
     };
 
     // Add authentication method
@@ -205,6 +248,8 @@ router.post('/test-connection', async (req, res) => {
     } else if (auth_method === 'password' && password) {
       console.log('🔐 Using password authentication');
       config.password = password;
+      // Enable keyboard-interactive auth for network devices (Cisco, HP, Aruba, etc.)
+      config.tryKeyboard = true;
     } else {
       return res.status(400).json({ error: 'Authentication method and credentials are required' });
     }
@@ -221,10 +266,17 @@ router.post('/test-connection', async (req, res) => {
           client.end();
           resolve(res.status(408).json({
             success: false,
-            error: 'Connection timeout - server did not respond within 10 seconds'
+            error: 'Connection timeout - server did not respond within 20 seconds'
           }));
         }
-      }, 10000);
+      }, 20000);
+
+      // Handle keyboard-interactive auth (required by many network switches)
+      client.on('keyboard-interactive', (name, instructions, lang, prompts, finish) => {
+        console.log(`🔐 Keyboard-interactive auth requested for test connection`);
+        const responses = prompts.map(() => config.password || '');
+        finish(responses);
+      });
 
       client.on('ready', () => {
         if (!resolved) {

@@ -93,6 +93,7 @@
     "title": "Paramètres",
     "subtitle": "Gérez vos préférences et la configuration de l'application",
     "sections": {
+      "profile": "Profil",
       "general": "Général",
       "appearance": "Apparence",
       "security": "Sécurité",
